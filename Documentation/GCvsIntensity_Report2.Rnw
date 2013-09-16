@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+%\usepackage{fancyhdr}
+\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{dsfont}
+\usepackage{bbold}
+\usepackage{graphicx, float}
+\usepackage{verbatim}
+\usepackage{amssymb, amsmath}
+%\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{wrapfig}
+\usepackage{pdfpages}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Relationship between Intensity and GC Content}
+\author{Subhrangshu Nandi\\
+  Department of Statistics\\
+  Laboratory of Molecular and Computational Genomics\\
+  nandi@stat.wisc.edu}
+%\date{July 15, 2013}
+\maketitle
+\noindent
+\section{Introduction and Data description}
+This is the first report of the work on the relationship between {\emph{flouroscence\_intensity}} and sequence composition or {\emph{GC-content}}. This is based on the data produced by Steve which includes $5,000$ groups. A {\emph{group}} is a channel through which the molecules are stretched and photographed. A {\emph{group}} can be associated with an average of $50$ molecules. This dataset has $3,871,094$ observations, with each observation being that of a fragment that has been aligned to a reference, using the optical mapping aligner. Each observation has the {\emph{flouroscence\_intensity}} of the fragment, the {\emph{GC-content}} of the corresponding location on the reference genome, and other variables such as:
+\begin{itemize}
+\item
+{\emph{moleculeID}}: Which molecule the fragment is a part of
+\item
+{\emph{groupID}}: Which channel on the surface the molecule was photographed on
+\item
+{\emph{alignedChr}}: Aligned chromosome (1, 2, ..., 23, X, Y)
+\item
+{\emph{alignedFragIndex}}: Location index of the fragment for each chromosome. This variable along with {\emph{alignedChr}} uniquely identifies a genomic location. There could be multiple molecules aligned to the same gemomic location and one of the goals of the study is to use these observations to eliminate possible sources of error.
+\item
+{\emph{numFrags}}: Number of fragments the molecule was divided into
+\item
+{\emph{numPixels}}: A measure of the length of the molecule, higher the value, longer the molecule
+\end{itemize}
+
+\noindent
+This dataset has $231,120$ molecules, observed in $4,821$ groups. 
+
+\section{Step 1: Analyze fragement aligned to same genome location}
+The first goal is to identify identical fragments (i.e., those that have been aligned to the same genome location) from multiple molecules. In order to do this, the orginal dataset is aggregated on a fragment level and the mean and standard deviations of the {\emph{flouroscence\_intensities}} of the fragments are estimated. A snapshot of this aggregated dataset is shown below:
+
+<<echo=FALSE>>=
+rm(list=ls(all.names=TRUE))
+rm(list=objects(all.names=TRUE))
+#dev.off()
+
+########################################################################
+## This script is for conducting further analysis on intensity and gc ##
+## content. This will use data produced by RScript03.This script will ##
+## incorporate fragment level effect first, as per discussion during  ##
+## the meeting with M. Newton and D. Schwartz on 07/15                ##
+########################################################################
+
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+FilePath <- '~/Project_GC_Content/RScripts_GC_Content/'
+DataPath <- '~/Project_GC_Content/'
+DataPath.Steve <- '/aspen/steveg/human_nMaps/GC_content/'
+Filename.Header <- paste('~/RScripts/HeaderFile_lmcg.R', sep='')
+source(Filename.Header)
+source(paste(FilePath, 'fn_Library_GC_Content.R', sep=''))
+########################################################################
+
+########################################################################
+## Data Input                                                         ##
+########################################################################
+filename='FragmentData_5000.RData'
+Filename <- paste(FilePath, filename, sep='')
+load(Filename)
+FragmentData$fractionGC_sd <- NULL
+names(FragmentData)[names(FragmentData)=='fractionGC_mean'] <- 'fractionGC'
+rownames(FragmentData) <- NULL
+head(FragmentData)
+@
+For example, from the first row of this table, we observe that the coverage of aligned fragment with index number 8576, of chromosome 16, is 86. This particular fragment has a GC-content of $48.51\%$ and the mean and standard deviations of the fluoroscence intensities are $36,945.85$ and $4,719.46$, respectively. \\
+There are a total of $308,545$ fragments. However, the coverage is not as high as 86 for most of them. Below is a summary of the number of molecules and a histogram plot (Fig 1) of the coverage of these fragments:
+<<echo=FALSE>>=
+print('Summary of Coverage of fragments: ')
+print(summary(FragmentData$numMolecules))
+@
+\begin{figure}[th]
+\centering 
+<<echo=FALSE, fig=TRUE>>=
+hist(FragmentData$numMolecules, breaks=40, main='Histogram of Coverage of fragments', xlab='Number of molecules')
+@
+% \caption{Some exploratory plots of the Data} % title of Table
+\label{fig:Fig1}
+\end{figure}
+
+When the variable $intensity\_mean$ is regressed with $fractionGC\_mean$ (or $GC-content$), the coefficient is quite significant (with p-value $<e^{-16}$, but the overall $R^2$ is only $2.5\%$. Similary, $intensity\_sd$ also has a significant relationship with $GC-content$, but the model $R^2$ is quite poor. There is evidence of a positive relationship between fluoroscence intensity and GC-content, however, more in-depth analysis is required. 
+
+\section{Step 2: Modeling intensity and GC-content}
+\subsection{With 'GROUP' effect}
+As per Prof. Schwartz's suggestion, the following analysis is conducted on the original dataset trimmmed down to only those fragments that have at least 40 molecules aligned to the same genomic location. This trimmed dataset has $35,040$ molecules and $4,513$ groups. The following model includes {\emph{numFrags}}, {\emph{numPixels}} and effect of {\emph{group}} as control variables, when trying to explain the relationship between {\emph{intensity}} and {\emph{gc\_content}}:
+$Model4:\\ Y = log(intensity) \\ X = gc\_content + numFrags + as.factor(groupID) + numPixels$ \\
+numPixels is a measure of the length (or size) of the molecule. Higher the number of pixels, longer the molecule. 
+\\
+Below is part of the R-output of the above mentioned model:\\
+\noindent
+{\bf{\underline{Summary of Model 4}}}
+<<echo=FALSE>>=
+Summary.Model4 <- paste(FilePath, 'Model4_Summary.RData', sep='')
+load(Summary.Model4)
+Anova.Model4 <- paste(FilePath, 'Model4_Anova.RData', sep='')
+load(Anova.Model4)
+print(Summary4$coefficients[1:4,])
+print('R-Squared of Model 4:')
+print(Summary4$r.squared)
+@
+Introducing the groups as factors seem to explain $60\%$ of the variability. Interestingly, the relationship between fluoroscence intensity and gc\_content remains significant even after introducing the group level effects. The coefficient ($\beta$) of gc\_content is quite stable around $0.17$, both before and after controlling for the other variables. This fact is quite encouraging. The effect of the other variable, like length (or size) of molecule, the number of fragments a molecule is divided into, have small, but statistically significant effect on the explanatory variable. Hence, those variables are not ommitted from the model yet. The relationship, thus far, can be mathematically expressed as (on an average):
+\begin{equation}
+log(Intensity) = 10.41 + 0.17(GC\_Content) + Other\ Factors
+\end{equation}
+This relationship is illustrated in the second plot of the other file attached. The red line confirms a positive relationship between intensity and gc-content, after controlling for group effects and other variables.
+%\includepdf[pages={-}]{AVPlot_fractionGC_Model4.pdf}
+
+\subsection{Next Steps}
+As per Prof. Newton's suggestions, following are the immediate next steps:
+\begin{enumerate}
+\item
+Fit a weighted least square regression model of the whole dataset; instead of eliminating the fragments with fewer molecules aligned to the same genomic location, this approach would just reduce the weightage. However, this means the design matrix will approximately have 3.8 million rows and around 5,000 columns (based on the number of groups). After trying to run this multiple times, even on a server with 128Gigs RAM, R could not fit the model. Hence, the model estimation has to be broken down by selecting independent subsets of the big dataset. This will be the topic of the next report. This will involve smart parallelly execuble model fitting and subsequent statistical aggregation of the fit between intensity and gc-content.
+\item
+There could be a contagion effect between fragments next to each other. This effect, if present, should be estimated and subsequently controlled for, before the final model is proposed. This effect could be captured by fitting the model on a molecular level, not on a fragment level. 
+\item
+Once these effects are controlled for, it would be appropriate to extend the analyses to even shorter fragments (i.e., subdividing the fragments into shorter pieces) and move towards {\emph{intensity signal analysis}}.
+
+\end{enumerate}
+The following analysis is conducted on the original dataset, with all the fragments, but higher \end{document}
