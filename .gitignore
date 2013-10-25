@@ -4,4 +4,5 @@
 *.jpg
 *.pdf
 *.*~
+*.R~
 RScript_LatticePractice.R
