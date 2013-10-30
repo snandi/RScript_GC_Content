@@ -26,6 +26,7 @@ AllFragmentNames <- AllFragmentNames %w/o% c('chr3.bp50713000.intensities',
 ########################################################################
 ## Bigger for loop, one reference fragment location at a time         ##
 ########################################################################
+#FragmentName <- 'chr10.bp107002000.intensities'
 for(FragmentName in AllFragmentNames){
   #FragmentName <- 'chr10.bp107002000.intensities'
   FragmentName.Sub <- substr(x=FragmentName, start=1, stop=(nchar(FragmentName)-12))

@@ -6,3 +6,8 @@
 *.*~
 *.R~
 RScript_LatticePractice.R
+Plots
+Plots/*
+Documentation/*.pdf
+Documentation/*.log
+Documentation/*.aux

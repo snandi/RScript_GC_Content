@@ -1,0 +1,62 @@
+\documentclass[11pt]{article}
+%\usepackage{fancyhdr}
+\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{dsfont}
+\usepackage{bbold}
+\usepackage{graphicx, float}
+\usepackage{verbatim}
+\usepackage{amssymb, amsmath}
+%\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+
+\begin{document}
+
+\title{Instructions for using LMCG code libraries to access necessary data}
+\author{Subhrangshu Nandi\\
+  Department of Statistics\\
+  Laboratory of Molecular and Computational Genomics\\
+  nandi@stat.wisc.edu}
+%\date{July 13, 2013}
+\maketitle
+
+\begin{enumerate}
+\item
+In general, all perl libraries written by Steve, will be in the folder \begin{verbatim} /home/steveg/bin \end{verbatim}
+\item
+To extract data on nanocoding, particularly, for the GC-Intensity project, go to \begin{verbatim} /home/steveg/bin/nMaps/GC_content/ \end{verbatim} \\
+Use the file \texttt{alignmentLocations.pl} to produce tables like \begin{verbatim} /aspen/steveg/human_nMaps/GC_content/alignmentChunks.withLength.all7134Groups.goldOnly \end{verbatim} which look like
+\begin{verbatim}
+refID refStartIndex refEndIndex opID opStartIndex opEndIndex refStartCoor 
+refEndCoord opStartCoor opEndCoord orient lengthRatio
+
+chr1 1 2 2388301_734_2060415 18 17 17621 19740 121536 119548 -1 1.08472434266327
+chr1 1 2 2393020_734_2060368 15 14 17621 19740 113319 111465 -1 1.04471447859582
+chr1 1 2 2396217_734_2060303 0 1 17621 19740 0 2060 1 0.95170660205211
+chr1 1 2 2398509_734_2060043 0 1 17621 19740 0 2266 1 0.941316312241508
+chr1 2 3 2387802_734_2061088 16 15 19740 28925 106350 99103 -1 1.0932487070992
+chr1 2 3 2388301_734_2060415 17 16 19740 28925 119548 111623 -1 1.08472434266327
+chr1 2 3 2388598_734_2060536 14 13 19740 28925 112074 102403 -1 1.03741278084123
+chr1 2 3 2393020_734_2060368 14 13 19740 28925 111465 103128 -1 1.04471447859582
+chr1 2 3 2396217_734_2060303 1 2 19740 28925 2060 11742 1 0.95170660205211
+chr1 2 3 2398509_734_2060043 1 2 19740 28925 2266 11742 1 0.941316312241508
+\end{verbatim}
+\item
+To list intensities at each pixel, for any fragment, use the file \texttt{fluorIntensityFor\_nMaps.byPixel.pl}. This script parses the mol\_N.txt files and produces a table like the one named \begin{verbatim} pixelIntensities.eachFragment.all7134Groups \end{verbatim}
+which for a fragment with 4 pixels looks like
+\begin{verbatim}
+moleculeID      fragmentIndex   fragmentLength  pixelIntensities
+2327101_734_2060000     0       3.708   24211   23480   23352   23029
+\end{verbatim}
+\item
+To create the dataset to be read into R, do the following:\\
+\begin{verbatim}
+./intensityForAlignedFrags.pl -ch 1 -f 2 -a 
+alignmentChunks.withLength.all7134Groups.goldOnly 
+-nM pixelIntensities.eachFragment.all7134Groups
+\end{verbatim}
+
+
+\end{enumerate}
+\end{document}

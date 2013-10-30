@@ -139,3 +139,15 @@ fn_eliminateOutliers <- function(BigData, Outliers){
   BigData$Outlier <- NULL
   return(BigData)
 }
+########################################################################
+
+########################################################################
+## This function reads in Alignment chunk files created by Steve      ##
+########################################################################
+fn_readAlignmentChunks <- function(Filename, Header, Colnames, Colnames.Steve){
+  AlChunk <- read.table(file=Filename, header=Header, sep='\t', 
+                        skip=0, stringsAsFactors=FALSE)
+  colnames(AlChunk) <- Colnames
+  attributes(AlChunk)$comment <- Colnames.Steve
+  return(AlChunk)
+}
