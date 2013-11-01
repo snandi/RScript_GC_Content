@@ -11,7 +11,7 @@ rm(list=objects(all.names=TRUE))
 ########################################################################
 FilePath <- '~/Project_GC_Content/RScripts_GC_Content/'
 DataPath <- '/exports/aspen/steveg/human_nMaps/GC_content/'
-OutputDataPath <- '~/Project_GC_Content/Data/'
+OutputDataPath <- '~/Project_GC_Content/RData/'
 Filename.Header <- paste('~/RScripts/HeaderFile_lmcg.R', sep='')
 source(Filename.Header)
 source(paste(FilePath, 'fn_Library_GC_Content.R', sep=''))
@@ -52,7 +52,24 @@ load(Filename.Bin)
 length(unique(AlChunk$molID))
 
 ## How many fragments in each chromosome?
-Chr_Frags <- unique(AlChunk[,c('refChr', 'refStartIndex', 'refEndIndex')])
-head(Chr_Frags)
-table(Chr_Frags$refChr)
+# Chr_Frags <- unique(AlChunk[,c('refChr', 'refStartIndex')])
+# head(Chr_Frags)
+# table(Chr_Frags$refChr)
 
+########################################################################
+## How many molecules are aligned to any given chr & frag index?      ##
+########################################################################
+Chromosomes <- c('chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9',
+                 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 
+                 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY')
+
+for(Chr in Chromosomes){
+  TableName <- paste(Chr, '_Table', sep='')
+  Filename.Out <- paste(OutputDataPath, Chr, '_Table.RData', sep='')
+
+  ChrTable <- fn_numMolAlignedperLoc(AlChunk=subset(AlChunk, refChr==Chr))
+  assign(x=paste(Chr, '_Table', sep=''), value=ChrTable)
+  save(list=paste(Chr, '_Table', sep=''), file=Filename.Out)
+  rm(ChrTable)
+}
+########################################################################

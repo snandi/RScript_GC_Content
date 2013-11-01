@@ -84,6 +84,28 @@ fn_subsetByCoverage <- function(CoverageNum=15, filename='FragmentData_5000.RDat
 ########################################################################
 
 ########################################################################
+## This functions reads in the fragment data files produced by Steve' ##
+## s code and extracts the intensity data and returns that in a data- ##
+## -frame format. Each dataframe has a column of intensity values of  ##
+## one molecule. That molecule name is in one of the other columns.   ##
+########################################################################
+fn_returnMoleculeIntensity <- function(MoleculeID, FragmentData){
+  NColumns <- ncol(FragmentData)
+  Subset <- subset(FragmentData, moleculeID==MoleculeID)
+  Intensity <- as.vector(Subset[11:NColumns])
+  Intensity <- Intensity[!is.na(Intensity)]
+  IntensityData <- as.data.frame(Intensity)
+  IntensityData$MoleculeID <- MoleculeID
+  IntensityData$Intensity_Normalized <- IntensityData$Intensity/median(IntensityData$Intensity)
+  IntensityData$PixelNum <- index(IntensityData)
+  IntensityData <- within(data=IntensityData,{
+    MoleculeID <- factor(MoleculeID)
+  })
+  return(IntensityData)
+}
+########################################################################
+
+########################################################################
 ## This function takes the summary() object of an lm output and retu- ##
 ## -rns a row of output in the desired format                         ##
 ########################################################################
@@ -141,6 +163,7 @@ fn_eliminateOutliers <- function(BigData, Outliers){
 }
 ########################################################################
 
+
 ########################################################################
 ## This function reads in Alignment chunk files created by Steve      ##
 ########################################################################
@@ -150,4 +173,50 @@ fn_readAlignmentChunks <- function(Filename, Header, Colnames, Colnames.Steve){
   colnames(AlChunk) <- Colnames
   attributes(AlChunk)$comment <- Colnames.Steve
   return(AlChunk)
+}
+########################################################################
+
+########################################################################
+## This function takes in the Alignment chunk data and returns the n- ##
+## -umber of molecules aligned to each fragments, by chromosome.      ##
+########################################################################
+fn_numMolAlignedperLoc <- function(AlChunk){
+  Data <- unique(AlChunk[,c('refChr', 'refStartIndex', 'molID')])
+  
+  Chr_Frags_Mols.Table <- aggregate(x=Data$molID, by=list(Data$refChr, Data$refStartIndex), 
+                                    FUN=length)
+  names(Chr_Frags_Mols.Table) <- c('refChr', 'refStartIndex', 'numMolecules')
+  return(Chr_Frags_Mols.Table)
+}
+
+
+fn_alignPixels <- function(Test, Reference){
+  if(length(Reference) < length(Test)){
+    Diff <- length(Test) - length(Reference)
+    SimulationLength <- min(5000, floor(choose(n=length(Test), k=Diff)/10))
+    RSquared <- 0
+    BestSample <- sample(x=1:length(Test), size=Diff)
+    for(i in 1:SimulationLength){
+      Sample <- sample(x=1:length(Test), size=Diff)
+      Test1 <- Test[index(Test) %w/o% c(Sample)]
+      Model <- lm(Test1 ~ Reference)
+      if(summary(Model)$r.squared > RSquared){
+        RSquared <- summary(Model)$r.squared
+        BestSample <- Sample
+      }
+      #print(c(RSquared, summary(Model)$r.squared))
+    }
+    Test.Aligned <- Test[index(Test) %w/o% c(BestSample)]
+    print(RSquared)
+    return(Test.Aligned)
+  } else if(length(Test) < length(Reference)){
+    Diff <- length(Reference) - length(Test)
+    SimulationLength <- min(5000, floor(choose(n=length(Test), k=Diff)/10))
+    RSquared <- 0
+    BestSample <- sample(x=1:length(Test), size=Diff)
+    for(Index in BestSample){
+      Test1 <- Test
+    }
+    Test1 <- Test[index(Test) %w/o% c(Sample)]    
+  }
 }

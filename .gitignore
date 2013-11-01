@@ -11,3 +11,5 @@ Plots/*
 Documentation/*.pdf
 Documentation/*.log
 Documentation/*.aux
+Temp*
+*.Rout
