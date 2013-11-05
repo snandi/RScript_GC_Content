@@ -56,7 +56,13 @@ To create the dataset to be read into R, do the following:\\
 alignmentChunks.withLength.all7134Groups.goldOnly 
 -nM pixelIntensities.eachFragment.all7134Groups
 \end{verbatim}
-
+To be more specific, the following is the complete command, including the correct folder paths
+\begin{verbatim}
+intensityForAlignedFrags.pl -ch 3 -f 13762 -a 
+/aspen/steveg/human_nMaps/GC_content/alignmentChunks.withLength.all7134Groups.goldOnly 
+-nM /aspen/steveg/human_nMaps/GC_content/subdivideFragments/
+pixelIntensities.eachFragment.all7134Groups > chr3_frag13762_intensities
+\end{verbatim}
 
 \end{enumerate}
 \end{document}

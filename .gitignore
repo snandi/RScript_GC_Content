@@ -13,3 +13,4 @@ Documentation/*.log
 Documentation/*.aux
 Temp*
 *.Rout
+Paths_Header.R

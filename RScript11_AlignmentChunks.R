@@ -3,29 +3,27 @@ rm(list=objects(all.names=TRUE))
 #dev.off()
 
 ########################################################################
-## This script is for plotting intensity profiles of multiple molecu- ##
+## This script is for reading and extracting important information    ##
+## out of any alignmentchunk file, produces after an alignment        ##
 ########################################################################
 
 ########################################################################
-## Initialize Header file and function library                        ##
+## Run Path definition file                                           ##
 ########################################################################
-FilePath <- '~/Project_GC_Content/RScripts_GC_Content/'
+source('~/Project_GC_Content/RScripts_GC_Content/Paths_Header.R')
 DataPath <- '/exports/aspen/steveg/human_nMaps/GC_content/'
-OutputDataPath <- '~/Project_GC_Content/RData/'
-Filename.Header <- paste('~/RScripts/HeaderFile_lmcg.R', sep='')
-source(Filename.Header)
-source(paste(FilePath, 'fn_Library_GC_Content.R', sep=''))
+AlignmentFilename <- 'alignmentChunks.withLength.all7134Groups.goldOnly'
 ########################################################################
 
 setwd(DataPath)
-Filename <- paste(DataPath, 'alignmentChunks.withLength.all7134Groups.goldOnly', sep='')
+Filename <- paste(DataPath, AlignmentFilename, sep='')
 
 Colnames <- c('refChr', 'refStartIndex', 'refEndIndex', 'molID', 'molStartIndex', 
-                       'molEndIndex', 'refStartCoor', 'refEndCoord', 'molStartCoor', 
+                       'molEndIndex', 'refStartCoord', 'refEndCoord', 'molStartCoord', 
                        'molEndCoord', 'orient', 'lengthRatio')
 
 Colnames.Steve <- c('refID', 'refStartIndex', 'refEndIndex', 'opID', 
-'opStartIndex', 'opEndIndex', 'refStartCoor', 'refEndCoord', 'opStartCoor', 'opEndCoord', 
+'opStartIndex', 'opEndIndex', 'refStartCoord', 'refEndCoord', 'opStartCoord', 'opEndCoord', 
 'orient', 'lengthRatio')
 
 ########################################################################

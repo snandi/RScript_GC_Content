@@ -1,39 +1,37 @@
 rm(list=ls(all.names=TRUE))
 rm(list=objects(all.names=TRUE))
 #dev.off()
-setwd('~/Project_GC_Content/RScripts_GC_Content/')
+
 ########################################################################
-## This script is for plotting intensity profiles of multiple molecu- ##
-## -les aligned to the same fragment location after aligning the pix- ##
-## -els using the monte-carlo type algorithm.                         ##
+## This script is for reading and extracting important information    ##
+## out of any alignmentchunk file, produces after an alignment        ##
 ########################################################################
 
 ########################################################################
 ## Run Path definition file                                           ##
 ########################################################################
-source('Paths_Header.R')
+source('~/Project_GC_Content/RScripts_GC_Content/Paths_Header.R')
 ########################################################################
 
-setwd(DataPath)
-AllFragmentNames <- list.files()[grep(pattern='intensities', x=list.files())]
-AllFragmentNames <- AllFragmentNames %w/o% c('chr3.bp50713000.intensities', 
-                                             'chr11.frag4854.intensities')
+########################################################################
+## Load the binary RData file of the Alignment Chunks, previously cr- ##
+## eated                                                              ##
+########################################################################
+Filename.Bin <- paste(OutputDataPath, 
+                      'alignmentChunks.withLength.all7134Groups.goldOnly.RData', sep='')
+load(Filename.Bin)
 
-FragmentName <- 'chr10.bp107002000.intensities'
+########################################################################
+## Chr3, reference Fragment Index: 13762                              ##
+########################################################################
+FragmentName <- 'chr3_frag13762_intensities'
 FragmentName.Sub <- substr(x=FragmentName, start=1, stop=(nchar(FragmentName)-12))
 FragmentName.GC <- gsub(pattern='intensities', replacement='gcContent', x=FragmentName)
 
-FragmentFilename <- paste(DataPath, FragmentName, sep='')
+FragmentFilename <- paste(DataPath.Nandi, FragmentName, sep='')
 ## These fragment files are created by Steve
 FragmentData <- read.table(file=FragmentFilename, header=TRUE, 
                            stringsAsFactors=FALSE)
-GCFilename <- paste(DataPath, FragmentName.GC, sep='')
-GCFile <- read.table(file=GCFilename, header=FALSE, sep=',', skip=2,
-                     stringsAsFactors=FALSE)
-GCData <- as.data.frame(cbind(GC=GCFile[,5],
-                              BP100=index(GCFile)))
-#View(FragmentData)
-#str(FragmentData)
 Molecules <- FragmentData[,'moleculeID']
 MoleculeID <- Molecules[1]
 NumPages <- ceil(length(Molecules)/6) ## Depends on the number of molecules aligned
@@ -43,19 +41,19 @@ NumPages <- ceil(length(Molecules)/6) ## Depends on the number of molecules alig
 #########################################################################
 IntensityData <- do.call(what=rbind, lapply(X=Molecules, FUN=fn_returnMoleculeIntensity, 
                                             FragmentData=FragmentData))
-#dim(IntensityData)
-#head(IntensityData)
-IntensityData <- subset(IntensityData, MoleculeID != "2391387_734_2060372")
 
 NumPixels <- aggregate(IntensityData$PixelNum, by=list(IntensityData$MoleculeID), FUN=max)
-summary(NumPixels)
+NumPixels
 
-Reference <- subset(IntensityData, MoleculeID=="2393713_734_2060200")[,'Intensity']
-IntensityData.Aligned <- subset(IntensityData, MoleculeID=="2393713_734_2060200")
+Reference <- subset(IntensityData, MoleculeID=="2389364_734_2060253")[,'Intensity']
+IntensityData.Aligned <- subset(IntensityData, MoleculeID=="2389364_734_2060253")
+# Test <- subset(IntensityData, MoleculeID=="2398367_734_2060070")[,'Intensity']
+# Test.Aligned <- fn_alignPixels(Test=Test, Reference=Reference)
 
-for(Molecule in levels(IntensityData$MoleculeID) %w/o% "2393713_734_2060200"){
+for(Molecule in (levels(IntensityData$MoleculeID) %w/o% "2389364_734_2060253")){
   print(Molecule)
   Test <- subset(IntensityData, MoleculeID==Molecule)[,'Intensity']
+  print(length(Test))
   Test.Aligned <- fn_alignPixels(Test=Test, Reference=Reference)
   Intensity <- Test.Aligned
   TestData <- as.data.frame(Intensity)
@@ -80,6 +78,7 @@ IntensityData.Aligned.Wide$Intensity_Dn <- IntensityData.Aligned.Wide$Intensity_
 
 
 
+
 ############################ PLOTTING ################################
 Molecules <- levels(IntensityData$MoleculeID)
 NumPages <- ceil(length(Molecules)/6) ## Depends on the number of molecules aligned
@@ -97,16 +96,16 @@ for(Page in 1:NumPages){
   EndMolecule <- min((StartMolecule + 5), length(Molecules))
   NumPanels <- EndMolecule - StartMolecule + 1
   
-  PlotGC <- lattice::xyplot(GC ~ BP100, 
-                            data=GCData, 
-                            scales=list(x="free", y="free"), 
-                            type=c("l", "g"), lwd=1.25, col='gray87', 
-                            panel = function(...) { 
-                              panel.fill(col = 'royalblue4') 
-                              panel.xyplot(...) 
-                            }, 
-                            xlab='',
-                            main='GC Content of 100bp windows')
+#   PlotGC <- lattice::xyplot(GC ~ BP100, 
+#                             data=GCData, 
+#                             scales=list(x="free", y="free"), 
+#                             type=c("l", "g"), lwd=1.25, col='gray87', 
+#                             panel = function(...) { 
+#                               panel.fill(col = 'royalblue4') 
+#                               panel.xyplot(...) 
+#                             }, 
+#                             xlab='',
+#                             main='GC Content of 100bp windows')
   
   PlotIntensity <- lattice::xyplot(Intensity_Normalized ~ PixelNum | MoleculeID, 
                                    data=subset(IntensityData, MoleculeID %in% levels(IntensityData$MoleculeID)[StartMolecule:EndMolecule]), 
@@ -118,14 +117,11 @@ for(Page in 1:NumPages){
                                      panel.xyplot(...) 
                                    }, 
                                    main=paste('Intensity plots of molecules aligned to', FragmentName.Sub))
-  grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/5,4/5))
+#   grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/5,4/5))
+  print(PlotIntensity)
   ## This grid command prints the two charts into the pdf device
 }
 dev.off()
-
-
-
-
 
 Filename.pdf <- paste('~/Project_GC_Content/RScripts_GC_Content/Plots/IntensityPlots_', 
                       FragmentName.Sub, '_Aligned_', Today, '.pdf', sep='')
@@ -139,16 +135,16 @@ for(Page in 1:NumPages){
   EndMolecule <- min((StartMolecule + 5), length(Molecules))
   NumPanels <- EndMolecule - StartMolecule + 1
   
-  PlotGC <- lattice::xyplot(GC ~ BP100, 
-                            data=GCData, 
-                            scales=list(x="free", y="free"), 
-                            type=c("l", "g"), lwd=1.25, col='gray87', 
-                            panel = function(...) { 
-                              panel.fill(col = 'darkgreen') 
-                              panel.xyplot(...) 
-                            }, 
-                            xlab='',
-                            main='GC Content of 100bp windows')
+#   PlotGC <- lattice::xyplot(GC ~ BP100, 
+#                             data=GCData, 
+#                             scales=list(x="free", y="free"), 
+#                             type=c("l", "g"), lwd=1.25, col='gray87', 
+#                             panel = function(...) { 
+#                               panel.fill(col = 'darkgreen') 
+#                               panel.xyplot(...) 
+#                             }, 
+#                             xlab='',
+#                             main='GC Content of 100bp windows')
   
   PlotIntensity <- lattice::xyplot(Intensity_Normalized ~ PixelNum | MoleculeID, 
                                    data=subset(IntensityData.Aligned, MoleculeID %in% levels(IntensityData.Aligned$MoleculeID)[StartMolecule:EndMolecule]), 
@@ -160,7 +156,8 @@ for(Page in 1:NumPages){
                                      panel.xyplot(...) 
                                    }, 
                                    main=paste('After aligning all the pixels to a reference', FragmentName.Sub))
-  grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/5,4/5))
+#   grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/5,4/5))
+  print(PlotIntensity)
   ## This grid command prints the two charts into the pdf device
 }
 
@@ -176,7 +173,30 @@ PlotMeanIntensity <- lattice::xyplot(Intensity_Mean + Intensity_Up + Intensity_D
                                      }, 
                                      main=paste('Mean Intensity plot after pixel alignment'), 
                                      ylab='Mean Intensity +/- 3 standard dev')
-grid.arrange(PlotGC, PlotMeanIntensity, ncol=1, heights=c(1/3,2/3))
+# grid.arrange(PlotGC, PlotMeanIntensity, ncol=1, heights=c(1/3,2/3))
+print(PlotMeanIntensity)
 
 dev.off()
 
+
+
+
+
+
+
+AlChunk.chr7 <- subset(AlChunk, refChr=='chr7')
+AlChunk.chr7$num_basepairs <- AlChunk.chr7$refEndCoord - AlChunk.chr7$refStartCoord
+
+#head(AlChunk.chr7)
+#tail(AlChunk.chr7)
+
+1706711  1713935
+
+StartBPCoord <- 1706711
+EndBPCoord <- 1713935
+View(subset(AlChunk.chr7, refStartCoord >= StartBPCoord & refEndCoord <= EndBPCoord))
+View(subset(AlChunk.chr7, refStartCoord >= StartBPCoord))
+
+str(AlChunk.chr7)
+head(AlChunk.chr7)
+tail(AlChunk.chr7)

@@ -190,10 +190,16 @@ fn_numMolAlignedperLoc <- function(AlChunk){
 }
 
 
-fn_alignPixels <- function(Test, Reference){
+########################################################################
+## This function takes in a reference vector and a Test vector and    ##
+## aligns them pixel by pixel, based on randomized pixel insertion/   ##
+## deletion, a Monte-carlo type algorithm.                            ##
+########################################################################
+fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
   if(length(Reference) < length(Test)){
+    print("Reference Shorter")
     Diff <- length(Test) - length(Reference)
-    SimulationLength <- min(5000, floor(choose(n=length(Test), k=Diff)/10))
+    SimulationLength <- min(Simulation_N, floor(choose(n=length(Test), k=Diff)/10))
     RSquared <- 0
     BestSample <- sample(x=1:length(Test), size=Diff)
     for(i in 1:SimulationLength){
@@ -210,13 +216,31 @@ fn_alignPixels <- function(Test, Reference){
     print(RSquared)
     return(Test.Aligned)
   } else if(length(Test) < length(Reference)){
+    print("Reference Longer")
     Diff <- length(Reference) - length(Test)
-    SimulationLength <- min(5000, floor(choose(n=length(Test), k=Diff)/10))
+    SimulationLength <- min(Simulation_N, floor(choose(n=length(Test), k=Diff)/10))
     RSquared <- 0
-    BestSample <- sample(x=1:length(Test), size=Diff)
-    for(Index in BestSample){
+    Test.Aligned <- Test
+    for(i in 1:SimulationLength){
+#       print(paste(i, RSquared))
       Test1 <- Test
+      for(PixelNum in 1:Diff){
+        Insert_PixelNum <- sample(x=2:(length(Test1) -1), size=1)
+        Insert_Intensity <- 0.5*(Test1[Insert_PixelNum] + Test1[Insert_PixelNum + 1])
+        Test1 <- c(Test1[1:Insert_PixelNum], Insert_Intensity, 
+                   Test1[(Insert_PixelNum + 1):length(Test1)])
+      }
+      Model <- lm(Test1 ~ Reference)
+      if(summary(Model)$r.squared > RSquared){
+        RSquared <- summary(Model)$r.squared
+        Test.Aligned <- Test1
+      }
     }
-    Test1 <- Test[index(Test) %w/o% c(Sample)]    
+    print(RSquared)
+    return(Test.Aligned)
+  } else{
+    print("Same Length")
+    Test.Aligned <- Test
+    return(Test.Aligned)
   }
 }
