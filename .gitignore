@@ -11,3 +11,4 @@ Plots/*
 Documentation/*.pdf
 Documentation/*.log
 Documentation/*.aux
+Paths_Header.R
