@@ -3,29 +3,27 @@ rm(list=objects(all.names=TRUE))
 #dev.off()
 
 ########################################################################
-## This script is for plotting intensity profiles of multiple molecu- ##
+## This script is for reading and extracting important information    ##
+## out of any alignmentchunk file, produces after an alignment        ##
 ########################################################################
 
 ########################################################################
-## Initialize Header file and function library                        ##
+## Run Path definition file                                           ##
 ########################################################################
-FilePath <- '~/Project_GC_Content/RScripts_GC_Content/'
+source('~/Project_GC_Content/RScripts_GC_Content/Paths_Header.R')
 DataPath <- '/exports/aspen/steveg/human_nMaps/GC_content/'
-OutputDataPath <- '~/Project_GC_Content/Data/'
-Filename.Header <- paste('~/RScripts/HeaderFile_lmcg.R', sep='')
-source(Filename.Header)
-source(paste(FilePath, 'fn_Library_GC_Content.R', sep=''))
+AlignmentFilename <- 'alignmentChunks.withLength.all7134Groups.goldOnly'
 ########################################################################
 
 setwd(DataPath)
-Filename <- paste(DataPath, 'alignmentChunks.withLength.all7134Groups.goldOnly', sep='')
+Filename <- paste(DataPath, AlignmentFilename, sep='')
 
 Colnames <- c('refChr', 'refStartIndex', 'refEndIndex', 'molID', 'molStartIndex', 
-                       'molEndIndex', 'refStartCoor', 'refEndCoord', 'molStartCoor', 
+                       'molEndIndex', 'refStartCoord', 'refEndCoord', 'molStartCoord', 
                        'molEndCoord', 'orient', 'lengthRatio')
 
 Colnames.Steve <- c('refID', 'refStartIndex', 'refEndIndex', 'opID', 
-'opStartIndex', 'opEndIndex', 'refStartCoor', 'refEndCoord', 'opStartCoor', 'opEndCoord', 
+'opStartIndex', 'opEndIndex', 'refStartCoord', 'refEndCoord', 'opStartCoord', 'opEndCoord', 
 'orient', 'lengthRatio')
 
 ########################################################################
@@ -52,7 +50,24 @@ load(Filename.Bin)
 length(unique(AlChunk$molID))
 
 ## How many fragments in each chromosome?
-Chr_Frags <- unique(AlChunk[,c('refChr', 'refStartIndex', 'refEndIndex')])
-head(Chr_Frags)
-table(Chr_Frags$refChr)
+# Chr_Frags <- unique(AlChunk[,c('refChr', 'refStartIndex')])
+# head(Chr_Frags)
+# table(Chr_Frags$refChr)
 
+########################################################################
+## How many molecules are aligned to any given chr & frag index?      ##
+########################################################################
+Chromosomes <- c('chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9',
+                 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 
+                 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY')
+
+for(Chr in Chromosomes){
+  TableName <- paste(Chr, '_Table', sep='')
+  Filename.Out <- paste(OutputDataPath, Chr, '_Table.RData', sep='')
+
+  ChrTable <- fn_numMolAlignedperLoc(AlChunk=subset(AlChunk, refChr==Chr))
+  assign(x=paste(Chr, '_Table', sep=''), value=ChrTable)
+  save(list=paste(Chr, '_Table', sep=''), file=Filename.Out)
+  rm(ChrTable)
+}
+########################################################################
