@@ -244,3 +244,34 @@ fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
     return(Test.Aligned)
   }
 }
+
+########################################################################
+## This function takes in a DNA sequence "agggctattaa" and returns    ##
+## smaller subsequence chunks based on user specified length. This    ##
+## was adapted from a function chunks.2 found online                  ##
+########################################################################
+fn_subseq <- function(x, n, force.number.of.groups = TRUE, len = length(x), 
+                    groups = trunc(len/n), overflow = len%%n) { 
+  ## The argument force.number.of.groups=TRUE means it will append the 
+  ## remainder of the elements to the last chunk
+  if(force.number.of.groups) {
+    f1 <- as.character(sort(rep(1:n, groups)))
+    f <- as.character(c(f1, rep(n, overflow)))
+  } else {
+    f1 <- as.character(sort(rep(1:groups, n)))
+    f <- as.character(c(f1, rep("overflow", overflow)))
+  }
+  
+  g <- split(x, f)
+  
+  if(force.number.of.groups) {
+    g.names <- names(g)
+    g.names.ordered <- as.character(sort(as.numeric(g.names)))
+  } else {
+    g.names <- names(g[-length(g)])
+    g.names.ordered <- as.character(sort(as.numeric(g.names)))
+    g.names.ordered <- c(g.names.ordered, "overflow")
+  }
+  
+  return(g[g.names.ordered])
+}
