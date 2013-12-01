@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+%\usepackage{fancyhdr}
+\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{dsfont}
+\usepackage{bbold}
+\usepackage{graphicx, float}
+\usepackage{verbatim}
+\usepackage{amssymb, amsmath}
+%\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+
+
+\newcommand{\Exp}{\mathds{E}}
+\newcommand{\Prob}{\mathds{P}}
+\newcommand{\Z}{\mathds{Z}}
+\newcommand{\Ind}{\mathds{1}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\be}{\begin{equation}}                                                                                   
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bes}{\begin{equation*}}                                                                                 
+\newcommand{\ees}{\end{equation*}}
+
+
+\begin{document}
+
+\title{Mini report on CpG Methylation Analysis}
+\author{Subhrangshu Nandi\\
+  Laboratory of Molecular and Computational Genomics\\
+  nandi@stat.wisc.edu}
+%\date{July 15, 2013}
+\maketitle
+
+\subsection*{Introduction and Motivation}
+The primary goal of the current project is studying the relationship between fluorescence intensity and sequence composition. One of the contentions is that GC-rich regions bind better with YOYO dye and consequently should have stronger fluorescence intensity measurements. However, there are some CpG islands in the human genome (sequences of repeats of dinucleotides GC) which when methylated could reduce the affinity of GC's binding with the dye and hence dampen the intensity measurements. As a consequence, some GC-rich regions could end up resulting in weaker fluorescence intensity measurements. \\
+
+The goal of this mini side project was to visualize some of these regions in the genome to help us ask the right questions in order for us to be able to discern the impact of CpG methylation on intensity measurements. 
+
+\subsection*{Challenge}
+Even if we identify regions on the genome where there is a high chance of methylation, we dont know which molecules in our sample are methylated and which aren't. Essentially, we are trying to establish a relationship function as follows
+\begin{equation}
+\text{Intensity } = \beta _0 + \beta _1\text{ Group } + \beta _2\text{ Molecule } + \beta _3\text{ GC } + \beta _4\text{ SeqComp } + \beta _5\Ind _{\{\text{CpG Methylated} \}} + \epsilon
+\end{equation}
+where,
+$\text{SeqComp }$ is a vector of sequence composition characteristics in addition to the GC-content percentage already included and $\Ind _{\{\text{CpG Methylated} \}} = 1$, if we know that particular region is methylated, or $0$ otherwise. This would be a relatively solvable problem if we had strong confidence on the estimation of coefficients $\beta_1, \beta_2, \beta_3, \beta_4$. Then, we could look at all the molecules aligned to a particular fragment of the genome and test for differences in them, hoping to see some molecules with lower intensity measurements as a result of CpG methylation. However, since our study of the relationship between sequence composition and intensity is still ongoing, we are not {\underline{yet}} in a position to ask questions about CpG methylation. 
+
+\subsection*{Some results}
+In the attached excel file Adi lists the CpG islands he chose for me to analyze. Attached are the intensity plots of all the molecules attached to those CpG islands. Visual inspection does not provide us further insight into the possible effect CpG methylation might have been having on the intensity measurements. There is some visual evidence in the plots of Chr3 and Chr20 that some molecules have lower intensities compared to the others aligned to the same fragment, which could be attributed to CpG methylation, but it is too early to confirm. 
+
+\subsection*{Next steps}
+In order for us to attribute in reduction in intensity measurements to CpG methylation, we need to look at intensities of fragments of similar length and similar GC content, but no possibilities of CpG methylation and compare their intensities with those observed in these six fragments. Please provide feedback if you have better alternatives. 
+
+\subsection*{Anova of pixel position as factor}
+I also have all the one-way anova results for the intensities vs pixel position, to substantiate any claim that genomic position has any discernible systematic effect on the intensities. It would be great if we could set up a meeting to discuss those and proceed from there.
+
+\end{document}

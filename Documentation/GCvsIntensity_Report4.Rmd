@@ -1,0 +1,221 @@
+Fluorescence Intensity & Sequence Composition
+=============================================
+### Author: Subhrangshu Nandi
+### Date: 2013-11-26
+
+### Big Picture (Goal)
+
+- Establish relationship between Fluorescence Intensity & Sequence Composition
+- Construct acceptable band of intensities for as many locations on the genome as possible
+- Use data from Multiple Miloma Sample with 7,134 groups
+
+### Today's objectives
+
+1. Discuss alignment algorithm
+  - Needs improvement
+2. Discuss anova result of genomic position & intensity
+3. Discuss temporary detour
+  - CpG Islands
+  - Effect of Methylation on Fluorescence Intensity
+  - Plots of CpG Islands
+  - Plots of Alpha-globin CpG Islands
+  - Statistical test results
+4. Discuss getting back on track
+  - Next steps
+
+```{r, include=FALSE}
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+OutputDataPath <- '~/Project_GC_Content/RData/'
+RScriptPath <- '~/Project_GC_Content/RScripts_GC_Content/'
+RDataPath <- '~/Project_GC_Content/RData/'
+DataPath.Nandi <- '~/Project_GC_Content/Data/'
+DataPath.CpG <- '~/Project_GC_Content/CpGIslands/'
+DataPath.Steve <- '/aspen/steveg/human_nMaps/GC_content/'
+Filename.Header <- paste('~/RScripts/HeaderFile_lmcg.R', sep='')
+source(Filename.Header)
+source(paste(RScriptPath, 'fn_Library_GC_Content.R', sep=''))
+########################################################################
+```
+
+#### CpG Islands
+
+- 6 separate CpG islands chosen by Adi (chr8, chr2, chr19, chr20, chr3, chr7)
+- Example: chr20_frag6217
+
+```{r, echo=FALSE}
+########################################################################
+## Enter Fragment Details                                             ##
+########################################################################
+Filename <- paste(DataPath.CpG, 'CpG_IslandsOfInterest.csv', sep='')
+Fragments <- read.csv(file=Filename, header=TRUE, stringsAsFactors=F)
+FragmentRow <- 4
+#Chr <- 'chr19'
+Chr <- Fragments[FragmentRow, 'Chr']
+#FragIndex <- 65
+FragIndex <- Fragments[FragmentRow, 'FragIndex']
+#FragBP_Start <- 593752      ## Starting base pair coordinate of fragment
+FragBP_Start <- Fragments[FragmentRow, 'FragBP_Start']
+#FragBP_End <- 621533        ## Ending base pair coordinate of fragment
+FragBP_End <- Fragments[FragmentRow, 'FragBP_End']
+BasePairInterval <- 200     ## Length of base pair interval to estimate gcat %      
+NumBP_Frag <- FragBP_End - FragBP_Start ## Length of frag in BP
+NumSubFrag <- NumBP_Frag/BasePairInterval ## Number of sub fragments
+#CpG_Start <- 615691         ## Starting base pair coordinate of CpG island
+CpG_Start <- Fragments[FragmentRow, 'CpG_Start']
+#CpG_End <- 623505           ## Ending base pair coordinate of CpG island
+CpG_End <- Fragments[FragmentRow, 'CpG_End']
+NumBP_CpG <- CpG_End - CpG_Start ## Length of CpG island in BP
+CpG_Start_Relative <- round(max(1, (CpG_Start - FragBP_Start + 1)/BasePairInterval), 0)
+                            ## max is used for those CpG regions that start before
+                            ## the start of the fragment
+CpG_End_Relative <- round(min(NumSubFrag, (CpG_End - FragBP_Start + 1)/BasePairInterval), 0)
+                            ## min is used for those CpG regions that continue
+                            ## beyond the length of this fragment
+########################################################################
+## Load Intensity data for the fragment                               ##
+########################################################################
+FragmentName <- paste(Chr, '_frag', FragIndex, '_intensities', sep='')
+FragmentName.Sub <- substr(x=FragmentName, start=1, stop=(nchar(FragmentName)-12))
+FragmentName.GC <- gsub(pattern='intensities', replacement='gcContent', x=FragmentName)
+
+Filename.In <- paste(DataPath.CpG, FragmentName.Sub, '_RegData.RData', sep='')
+load(Filename.In)
+str(IntensityData.Reg)
+head(IntensityData.Reg)
+```
+#### Model 1: Intensity ~ Genome location (as factor)
+```{r, echo=FALSE}
+########################################################################
+## Load Intensity data for the fragment                               ##
+########################################################################
+Model1 <- lm(Intensity ~ PixelFactor, data=IntensityData.Reg)
+anova(Model1)
+summary(Model1)
+```
+
+#### Model 3: Intensity ~ Genome location (as factor) + GroupID
+```{r, echo=FALSE}
+Model2 <- lm(Intensity ~ GroupID, data=IntensityData.Reg)
+#anova(Model2)
+#summary(Model2)
+
+Model3 <- lm(Intensity ~ GroupID + PixelFactor, data=IntensityData.Reg)
+anova(Model3)
+anova(Model1, Model3)
+summary(Model3)
+```
+
+#### Model 4: Intensity ~ GroupID + G + C + T
+```{r, echo=FALSE}
+Model4 <- lm(Intensity ~ GroupID+GG+CC+TT, data=IntensityData.Reg)
+summary(Model4)
+anova(Model2, Model4)
+```
+
+#### Model 5: Intensity ~ GroupID + CpG (Yes/No)
+```{r, echo=FALSE}
+Model5 <- lm(Intensity ~ GroupID + CpG, data=IntensityData.Reg)
+summary(Model5)
+anova(Model2, Model5)
+```
+
+#### Comments
+
+- Need more accurate molecule aligning algorithm
+- Genomic position not significant for this fragment
+- Need to analyze multiple molecules from the same groups, in order to better control for the experimental artifacts
+- Methylated or not is a random variable (not sure how to proceed)
+
+#### See other plots
+
+#### Example: chr16_frag27 (Alpha-Globin CpG Island)
+
+```{r, echo=FALSE}
+########################################################################
+## Enter Fragment Details                                             ##
+########################################################################
+Filename <- paste(DataPath.CpG, 'CpG_IslandsOfInterest.csv', sep='')
+Fragments <- read.csv(file=Filename, header=TRUE, stringsAsFactors=F)
+FragmentRow <- 8
+#Chr <- 'chr19'
+Chr <- Fragments[FragmentRow, 'Chr']
+#FragIndex <- 65
+FragIndex <- Fragments[FragmentRow, 'FragIndex']
+#FragBP_Start <- 593752      ## Starting base pair coordinate of fragment
+FragBP_Start <- Fragments[FragmentRow, 'FragBP_Start']
+#FragBP_End <- 621533        ## Ending base pair coordinate of fragment
+FragBP_End <- Fragments[FragmentRow, 'FragBP_End']
+BasePairInterval <- 200     ## Length of base pair interval to estimate gcat %      
+NumBP_Frag <- FragBP_End - FragBP_Start ## Length of frag in BP
+NumSubFrag <- NumBP_Frag/BasePairInterval ## Number of sub fragments
+#CpG_Start <- 615691         ## Starting base pair coordinate of CpG island
+CpG_Start <- Fragments[FragmentRow, 'CpG_Start']
+#CpG_End <- 623505           ## Ending base pair coordinate of CpG island
+CpG_End <- Fragments[FragmentRow, 'CpG_End']
+NumBP_CpG <- CpG_End - CpG_Start ## Length of CpG island in BP
+CpG_Start_Relative <- round(max(1, (CpG_Start - FragBP_Start + 1)/BasePairInterval), 0)
+                            ## max is used for those CpG regions that start before
+                            ## the start of the fragment
+CpG_End_Relative <- round(min(NumSubFrag, (CpG_End - FragBP_Start + 1)/BasePairInterval), 0)
+                            ## min is used for those CpG regions that continue
+                            ## beyond the length of this fragment
+########################################################################
+## Load Intensity data for the fragment                               ##
+########################################################################
+FragmentName <- paste(Chr, '_frag', FragIndex, '_intensities', sep='')
+FragmentName.Sub <- substr(x=FragmentName, start=1, stop=(nchar(FragmentName)-12))
+FragmentName.GC <- gsub(pattern='intensities', replacement='gcContent', x=FragmentName)
+
+Filename.In <- paste(DataPath.CpG, FragmentName.Sub, '_RegData.RData', sep='')
+load(Filename.In)
+str(IntensityData.Reg)
+head(IntensityData.Reg)
+```
+#### Model 1: Intensity ~ Genome location (as factor)
+```{r, echo=FALSE}
+########################################################################
+## Load Intensity data for the fragment                               ##
+########################################################################
+Model1 <- lm(Intensity ~ PixelFactor, data=IntensityData.Reg)
+anova(Model1)
+summary(Model1)
+```
+
+#### Model 3: Intensity ~ Genome location (as factor) + GroupID
+```{r, echo=FALSE}
+Model2 <- lm(Intensity ~ GroupID, data=IntensityData.Reg)
+#anova(Model2)
+#summary(Model2)
+
+Model3 <- lm(Intensity ~ GroupID + PixelFactor, data=IntensityData.Reg)
+anova(Model3)
+anova(Model1, Model3)
+summary(Model3)
+```
+
+#### Model 4: Intensity ~ GroupID + G + C + T
+```{r, echo=FALSE}
+Model4 <- lm(Intensity ~ GroupID+GG+CC+TT, data=IntensityData.Reg)
+summary(Model4)
+anova(Model2, Model4)
+```
+
+#### Model 5: Intensity ~ GroupID + CpG (Yes/No)
+```{r, echo=FALSE}
+Model5 <- lm(Intensity ~ GroupID + CpG, data=IntensityData.Reg)
+summary(Model5)
+anova(Model2, Model5)
+```
+
+### Comments
+#### - Can't distinguish in behavior between CpG Islands chosen by Adi and those in the Alpha Globin sites
+#### - Need a more thorough analysis, but need consensus on direction of project
+
+### Proposed Next Steps
+#### - Need to align (by pixel) the molecules accurately. Identify and discard outliers
+#### - Need to conduct more thorough analysis, involving multiple groups
+#### - Shelve CpG island analysis for now
+#### - Need sample selection plan - how to group similar fragments in the same pool to observe the effect of sequence composition on intensity
+

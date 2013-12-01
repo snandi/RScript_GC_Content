@@ -71,3 +71,20 @@ for(Chr in Chromosomes){
   rm(ChrTable)
 }
 ########################################################################
+
+########################################################################
+## This for loop does the following: For each chromosome, it lists    ##
+## those fragments that have at least 20 molecules aligned to the     ##
+## reference.                                                         ##
+########################################################################
+MinMolecules <- 20
+Chr <- 'chr7'
+for(Chr in Chromosomes){
+  Filename.In <- paste(OutputDataPath, Chr, '_Table.RData', sep='')
+  load(Filename.In)
+  chrTable <- get(x=paste(Chr, 'Table', sep='_'))
+  Filename.Out <- paste(OutputDataPath, Chr, '_fragIndexList_Min', MinMolecules, '.txt', sep='')
+  write.table(x=subset(chrTable, numMolecules>=MinMolecules)$refStartIndex, file=Filename.Out, 
+              row.names=FALSE, col.names=FALSE)
+  rm(chrTable)
+}

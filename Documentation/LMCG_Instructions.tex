@@ -64,5 +64,24 @@ intensityForAlignedFrags.pl -ch 3 -f 13762 -a
 pixelIntensities.eachFragment.all7134Groups > chr3_frag13762_intensities
 \end{verbatim}
 
+\item
+The human build 37 reference genome is located at \begin{verbatim} /omm/data/sequence/human_wchr-b37/Human_wchr-b37-all.fa \end{verbatim}
+
+\item
+In order to extract sequence data for a given window of nucleotide locations using the perl script \begin{verbatim} getSequenceForLocs.pl \end{verbatim} 
+is done by the following command:
+\begin{verbatim} cat /omm/data/sequence/human_wchr-b37/Human_wchr-b37-all.fa | 
+getSequenceForLocs.pl -locFile my-loctrac > output.fa \end{verbatim}
+
+\item
+In the folder \begin{verbatim} ~/Project_GC_Content/RData/ \end{verbatim}, 
+the files \begin{verbatim} chr*_fragIndexList_Min20 \end{verbatim} 
+contains the list of fragments in that chromosome that have at least 20 molecules aligned to them, in the reference. These files are created by \begin{verbatim} RScript11_AlignmentChunks.R \end{verbatim}. 
+
+\item
+The above fragIndexList files are used by the shell script \begin{verbatim} _generateExtractionCommandFile.sh \end{verbatim}
+to use the syntax mentioned in Step 4 to get the intensities of all the molecules aligned to a particular fragment index location. These fragment index locations are read in from the fragIndexList files created by R. This shell script creates a shell script for each chromosome, containing the commands for extracting intensities for one fragment per line. For example, these shell scripts are named \begin{verbatim} _extractIntensities_chr3.sh \end{verbatim}.
+
+\item
 \end{enumerate}
 \end{document}

@@ -3,9 +3,10 @@ rm(list=objects(all.names=TRUE))
 #dev.off()
 
 ########################################################################
-## This script looks at the CpG islands selected by Adi and plots     ##
-## the aligned intensities for all the molecules aligned to each of   ##
-## those fragments, along with the CpG islands.                       ##
+## This script looks at the CpG islands in the Alpha-globin sites that##
+## has a very large CpG island that is never methylated. This is      ##
+## essentially the same script as RScript_12. Eventually, this will   ##
+## be deprecated                                                      ##
 ########################################################################
 
 ########################################################################
@@ -33,32 +34,18 @@ load(Filename.Bin)
 ########################################################################
 ## Enter Fragment Details                                             ##
 ########################################################################
-Filename <- paste(DataPath.CpG, 'CpG_IslandsOfInterest.csv', sep='')
-Fragments <- read.csv(file=Filename, header=TRUE, stringsAsFactors=F)
-FragmentRow <- 4
-#for(FragmentRow in 3:8){
-#Chr <- 'chr19'
-Chr <- Fragments[FragmentRow, 'Chr']
-#FragIndex <- 65
-FragIndex <- Fragments[FragmentRow, 'FragIndex']
-#FragBP_Start <- 593752      ## Starting base pair coordinate of fragment
-FragBP_Start <- Fragments[FragmentRow, 'FragBP_Start']
-#FragBP_End <- 621533        ## Ending base pair coordinate of fragment
-FragBP_End <- Fragments[FragmentRow, 'FragBP_End']
+Chr <- 'chr16'
+FragIndex <- 26
 BasePairInterval <- 200     ## Length of base pair interval to estimate gcat %      
+FragBP_Start <- 218358      ## Starting base pair coordinate of fragment
+FragBP_End <- 224690        ## Ending base pair coordinate of fragment
 NumBP_Frag <- FragBP_End - FragBP_Start ## Length of frag in BP
 NumSubFrag <- NumBP_Frag/BasePairInterval ## Number of sub fragments
-#CpG_Start <- 615691         ## Starting base pair coordinate of CpG island
-CpG_Start <- Fragments[FragmentRow, 'CpG_Start']
-#CpG_End <- 623505           ## Ending base pair coordinate of CpG island
-CpG_End <- Fragments[FragmentRow, 'CpG_End']
+CpG_Start <- 222369         ## Starting base pair coordinate of CpG island
+CpG_End <- 223447           ## Ending base pair coordinate of CpG island
 NumBP_CpG <- CpG_End - CpG_Start ## Length of CpG island in BP
-CpG_Start_Relative <- round(max(1, (CpG_Start - FragBP_Start + 1)/BasePairInterval), 0)
-                            ## max is used for those CpG regions that start before
-                            ## the start of the fragment
-CpG_End_Relative <- round(min(NumSubFrag, (CpG_End - FragBP_Start + 1)/BasePairInterval), 0)
-                            ## min is used for those CpG regions that continue
-                            ## beyond the length of this fragment
+CpG_Start_Relative <- (CpG_Start - FragBP_Start + 1)/BasePairInterval
+CpG_End_Relative <- (CpG_End - FragBP_Start + 1)/BasePairInterval
 
 ########################################################################
 ## DNA sequence data                                                  ##
@@ -72,13 +59,6 @@ SeqData.CpGIsland <- SeqData[(CpG_Start_Relative*BasePairInterval):(CpG_End_Rela
 count(seq=SeqData, wordsize=2)
 count(seq=SeqData.CpGIsland, wordsize=2)
 count(seq=SeqData.CpGIsland, wordsize=1)
-
-SplitSeq_GCAT.DF <- as.data.frame(SplitSeq_GCAT)
-colnames(SplitSeq_GCAT.DF) <- c('GG', 'CC', 'AA', 'TT')
-SplitSeq_GCAT.DF$PixelNum <- index(SplitSeq_GCAT.DF)
-SplitSeq_GCAT.DF$CpG <- 0
-SplitSeq_GCAT.DF[CpG_Start_Relative:CpG_End_Relative, 'CpG'] <- 1
-SplitSeq_GCAT.DF$CpG <- as.factor(SplitSeq_GCAT.DF$CpG)
 
 #########################################################################
 ## For All molecules aligned to the fragment                           ##
@@ -138,37 +118,21 @@ IntensityData.Aligned.Wide$Intensity_Dn <- IntensityData.Aligned.Wide$Intensity_
 
 #View(IntensityData.Aligned.Wide)
 
-
 ############################### ANOVA ################################
 IntensityData.Aligned$PixelFactor <- as.factor(IntensityData.Aligned$PixelNum)
-IntensityData.Reg <- merge(x=IntensityData.Aligned, y=SplitSeq_GCAT.DF, all=F)
-IntensityData.Reg$GroupID <- as.factor(substr(x=IntensityData.Reg$MoleculeID, start=1, stop=7))
 str(IntensityData.Aligned)
-#View(IntensityData.Aligned)
-str(IntensityData.Reg)
-#View(IntensityData.Reg)
-Filename.Out <- paste(DataPath.CpG, FragmentName.Sub, '_RegData.RData', sep='')
-#save(IntensityData.Reg, file=Filename.Out)
-
-Model1 <- lm(Intensity ~ PixelFactor, data=IntensityData.Reg)
+Model1 <- lm(Intensity ~ PixelFactor, data=IntensityData.Aligned)
 anova(Model1)
 summary(Model1)
 
-Model2 <- lm(Intensity ~ GroupID, data=IntensityData.Reg)
+Model2 <- lm(Intensity ~ MoleculeID, data=IntensityData.Aligned)
 anova(Model2)
 summary(Model2)
 
-Model3 <- lm(Intensity ~ GroupID + PixelFactor, data=IntensityData.Reg)
+Model3 <- lm(Intensity ~ MoleculeID + PixelFactor, data=IntensityData.Aligned)
 anova(Model3)
-anova(Model1, Model3)
+anova(Model2, Model3)
 summary(Model3)
-
-Model4 <- lm(Intensity ~ GroupID+GG+CC+TT, data=IntensityData.Reg)
-summary(Model4)
-
-Model5 <- lm(Intensity ~ GroupID + CpG, data=IntensityData.Reg)
-summary(Model5)
-anova(Model5)
 
 ############################ PLOTTING ################################
 Molecules <- levels(IntensityData$MoleculeID)
@@ -176,97 +140,43 @@ Panels <- 5
 NumPages <- ceil(length(Molecules)/Panels) ## Depends on the number of molecules aligned
 
 Today <- Sys.Date()
-Filename.pdf <- paste('~/Project_GC_Content/RScripts_GC_Content/Plots/IntensityPlots_', 
-                      FragmentName.Sub, '_', Today, '.pdf', sep='')
-
-pdf(file=Filename.pdf, onefile=TRUE, pointsize=6)
-trellis.par.set(fontsize=list(text=8,points=8))
-
-my.Colors=c('olivedrab4', 'olivedrab1', 'gray25', 'gray56')
-PlotGC <- lattice::barchart(SplitSeq_GCAT, groups=TRUE, horizontal=FALSE,
-                            xlab='Nucleotide Position',
-                            scales=list(x=list(rot=90)),
-                            main='Sequence Composition', 
-                            par.settings = simpleTheme(col = my.Colors, border=my.Colors), 
-                            # For changing colors in barplot and legend and no black 
-                            # borders in the rectangles
-                            auto.key = list(adj = 1, columns = 4), 
-                            panel=function(...){
-                              panel.barchart(...)
-                              panel.abline(v=c(CpG_Start_Relative, CpG_End_Relative), col.line="red", lwd=2) 
-                            })
-
 Page <- 1
-for(Page in 1:NumPages){
-  StartMolecule <- Panels*(Page - 1) + 1
-  EndMolecule <- min((StartMolecule + Panels - 1), length(Molecules))
-  NumPanels <- EndMolecule - StartMolecule + 1
-  
-  PlotIntensity <- lattice::xyplot(Intensity_Normalized ~ PixelNum | MoleculeID, 
-                                   data=subset(IntensityData, MoleculeID %in% levels(IntensityData$MoleculeID)[StartMolecule:EndMolecule]), 
-                                   layout=c(1,NumPanels), 
-                                   scales=list(x="free", y="free"), 
-                                   type=c("l", "g"), lwd=1.25, col='darkblue',
-                                   panel = function(...) { 
-                                     panel.fill(col = 'gray78') 
-                                     panel.xyplot(...) 
-                                   }, 
-                                   main=paste('Intensity plots of molecules aligned to', FragmentName.Sub))
-  grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/3,2/3))
-  #print(PlotIntensity)
-  ## This grid command prints the two charts into the pdf device
-}
-dev.off()
-
 Filename.pdf <- paste('~/Project_GC_Content/RScripts_GC_Content/Plots/IntensityPlots_', 
                       FragmentName.Sub, '_Aligned_', Today, '.pdf', sep='')
 
 pdf(file=Filename.pdf, onefile=TRUE, pointsize=6)
 trellis.par.set(fontsize=list(text=8,points=8))
 
-Page <- 1
-PlotIntensity <- lattice::xyplot( Intensity ~ PixelNum, 
-                                  data=IntensityData.Aligned, 
-                                  groups=MoleculeID,
-                                  layout=c(1,1), 
-                                  scales=list(x="free", y="free"), 
-                                  type=c("l", "g"), lwd=1.25,
-                                  panel = function(...) { 
-                                    panel.fill(col = 'gray78') 
-                                    panel.superpose
-                                    panel.xyplot(...) 
-                                  }, 
-                                  main=paste('Raw Intensities, after aligning all the pixels to a reference', FragmentName.Sub))
-# my.Colors=c('olivedrab4', 'olivedrab1', 'gray25', 'gray56')
-# PlotGC <- lattice::barchart(SplitSeq_GCAT, groups=TRUE, horizontal=FALSE,
-#                             xlab='Nucleotide Position',
-#                             scales=list(x=list(rot=90)),
-#                             main='Sequence Composition', 
-#                             par.settings = simpleTheme(col = my.Colors, border=my.Colors), 
-#                             # For changing colors in barplot and legend and no black 
-#                             # borders in the rectangles
-#                             auto.key = list(adj = 1, columns = 4), 
-#                             panel=function(...){
-#                               panel.barchart(...)
-#                               panel.abline(v=c(CpG_Start_Relative, CpG_End_Relative), col.line="red", lwd=2) 
-#                             })
-
 for(Page in 1:NumPages){
   StartMolecule <- Panels*(Page - 1) + 1
   EndMolecule <- min((StartMolecule + Panels - 1), length(Molecules))
   NumPanels <- EndMolecule - StartMolecule + 1
-                              
-  PlotIntensity.Norm <- lattice::xyplot(Intensity_Normalized ~ PixelNum | MoleculeID, 
-                                        data=subset(IntensityData.Aligned, MoleculeID %in% levels(IntensityData.Aligned$MoleculeID)[StartMolecule:EndMolecule]), 
-                                        layout=c(1,NumPanels), 
-                                        scales=list(x="free", y="free"), 
-                                        type=c("l", "g"), lwd=1.25, col='darkgreen',
-                                        panel = function(...) { 
-                                          panel.fill(col = 'gray78') 
-                                          panel.xyplot(...) 
-                                        }, 
-                                        main=paste('After aligning all the pixels to a reference', FragmentName.Sub))
-  grid.arrange(PlotGC, PlotIntensity.Norm, ncol=1, heights=c(1/3,2/3))
+  
+  my.Colors=c('olivedrab4', 'olivedrab1', 'gray25', 'gray56')
+  PlotGC <- lattice::barchart(SplitSeq_GCAT, groups=TRUE, horizontal=FALSE,
+                              xlab='Nucleotide Position',
+                              scales=list(x=list(rot=90)),
+                              main='Sequence Composition', 
+                              par.settings = simpleTheme(col = my.Colors, border=my.Colors), 
+                              # For changing colors in barplot and legend and no black 
+                              # borders in the rectangles
+                              auto.key = list(adj = 1, columns = 4), 
+                              panel=function(...){
+                                panel.barchart(...)
+                                panel.abline(v=c(CpG_Start_Relative, CpG_End_Relative), col.line="red", lwd=2) 
+                              })
+  
+  PlotIntensity <- lattice::xyplot(Intensity_Normalized ~ PixelNum | MoleculeID, 
+                                   data=subset(IntensityData.Aligned, MoleculeID %in% levels(IntensityData.Aligned$MoleculeID)[StartMolecule:EndMolecule]), 
+                                   layout=c(1,NumPanels), 
+                                   scales=list(x="free", y="free"), 
+                                   type=c("l", "g"), lwd=1.25, col='darkgreen',
+                                   panel = function(...) { 
+                                     panel.fill(col = 'gray78') 
+                                     panel.xyplot(...) 
+                                   }, 
+                                   main=paste('After aligning all the pixels to a reference', FragmentName.Sub))
+  grid.arrange(PlotGC, PlotIntensity, ncol=1, heights=c(1/3,2/3))
   #print(PlotIntensity)
   ## This grid command prints the two charts into the pdf device
 }
@@ -283,10 +193,8 @@ PlotMeanIntensity <- lattice::xyplot(Intensity_Mean + Intensity_Up + Intensity_D
                                      }, 
                                      main=paste('Mean Intensity plot after pixel alignment'), 
                                      ylab='Mean Intensity +/- 1 standard dev')
-grid.arrange(PlotGC, PlotIntensity, PlotMeanIntensity, ncol=1, 
-             heights=c(1/3,1/3,1/3))
+grid.arrange(PlotGC, PlotMeanIntensity, ncol=1, heights=c(1/2,1/2))
 #print(PlotMeanIntensity)
 
 dev.off()
 
-#}

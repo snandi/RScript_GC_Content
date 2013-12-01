@@ -244,6 +244,7 @@ fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
     return(Test.Aligned)
   }
 }
+########################################################################
 
 ########################################################################
 ## This function takes in a DNA sequence "agggctattaa" and returns    ##
@@ -275,3 +276,40 @@ fn_subseq <- function(x, n, force.number.of.groups = TRUE, len = length(x),
   
   return(g[g.names.ordered])
 }
+########################################################################
+
+########################################################################
+## This function takes in a chromosome number, a reference fragment   ##
+## index number, grabs the DNA sequence data from a specified folder  ##
+## location, and returns the raw sequence data, the percentages of A, ##
+## C, G, T in 200 base pair windows                                   ##
+########################################################################
+fn_returnSeqComp <- function(Chr, FragIndex, Interval=200, DataPath.CpG){
+  Filename <- paste(DataPath.CpG, Chr, '_frag', FragIndex, '_seq.fa', sep='')
+  SeqData <- read.fasta(file = Filename)[[1]]
+  SeqTable <- count(seq=SeqData, wordsize=1)
+  SeqGC <- GC(SeqData)
+  
+  BasePosition <- seq(from=1, to=length(SeqData), by=Interval)
+  SplitSeq <- fn_subseq(x=SeqData, n=ceil(max(BasePosition)/Interval), force.number.of.groups=TRUE)
+  SplitSeq_ACGT <- do.call(what=rbind, lapply(X=SplitSeq, FUN=count, wordsize=1))
+  rownames(SplitSeq_ACGT) <- BasePosition[1:nrow(SplitSeq_ACGT)]
+  colnames(SplitSeq_ACGT) <- c('A', 'C', 'G', 'T')
+  SplitSeq_ACGT <- SplitSeq_ACGT/rowSums(SplitSeq_ACGT)
+  SplitSeq_GCAT <- SplitSeq_ACGT[,c('G', 'C', 'A', 'T')]
+  return(list(SeqData=SeqData, SeqTable=SeqTable, SeqGC=SeqGC, SplitSeq_GCAT=SplitSeq_GCAT))
+}
+########################################################################
+
+########################################################################
+## This function takes in all the molecules that are aligned to a     ##
+## particular fragment and chooses one to be the reference molecule   ##
+## to align all the other ones by pixel number.                       ##
+########################################################################
+fn_getRefMolecule <- function(NumPixels){
+  RowNum <- min(which(NumPixels$Pixels==floor(median(NumPixels$Pixels))))
+  RefLength <- NumPixels[RowNum,'Pixels']
+  RefMoleculeID <- as.vector(NumPixels[RowNum,'MoleculeID'])
+  return(RefMoleculeID)
+}
+########################################################################

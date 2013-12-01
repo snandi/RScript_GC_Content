@@ -1,3 +1,4 @@
+.gitignore
 .Rproj.user
 .Rhistory
 *.RData
@@ -8,6 +9,7 @@
 RScript_LatticePractice.R
 Plots
 Plots/*
+Documentation/*.md
 Documentation/*.pdf
 Documentation/*.log
 Documentation/*.aux
