@@ -30,14 +30,16 @@ Filename.Bin <- paste(OutputDataPath,
                       'alignmentChunks.withLength.all7134Groups.goldOnly.RData', sep='')
 load(Filename.Bin)
 
+Filename <- paste(DataPath.CpG, 'CpG_IslandsOfInterest.csv', sep='')
+Fragments <- read.csv(file=Filename, header=TRUE, stringsAsFactors=F)
+FragmentRow <- 5
+## The first 6 rows are CpG islands provided by Adi and the last 2 are 
+## Alpha-globin sites
+#for(FragmentRow in 3:8){
+#Chr <- 'chr19'
 ########################################################################
 ## Enter Fragment Details                                             ##
 ########################################################################
-Filename <- paste(DataPath.CpG, 'CpG_IslandsOfInterest.csv', sep='')
-Fragments <- read.csv(file=Filename, header=TRUE, stringsAsFactors=F)
-FragmentRow <- 4
-#for(FragmentRow in 3:8){
-#Chr <- 'chr19'
 Chr <- Fragments[FragmentRow, 'Chr']
 #FragIndex <- 65
 FragIndex <- Fragments[FragmentRow, 'FragIndex']
@@ -99,6 +101,7 @@ IntensityData <- do.call(what=rbind, lapply(X=Molecules, FUN=fn_returnMoleculeIn
 
 NumPixels <- aggregate(IntensityData$PixelNum, by=list(IntensityData$MoleculeID), FUN=max)
 colnames(NumPixels) <- c('MoleculeID', 'Pixels')
+hist(NumPixels$Pixels, n=40)
 
 #########################################################################
 ## Align all molecules by pixel numbers                                ##

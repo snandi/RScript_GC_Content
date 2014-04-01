@@ -71,7 +71,8 @@ The human build 37 reference genome is located at \begin{verbatim} /omm/data/seq
 In order to extract sequence data for a given window of nucleotide locations using the perl script \begin{verbatim} getSequenceForLocs.pl \end{verbatim} 
 is done by the following command:
 \begin{verbatim} cat /omm/data/sequence/human_wchr-b37/Human_wchr-b37-all.fa | 
-getSequenceForLocs.pl -locFile my-loctrac > output.fa \end{verbatim}
+getSequenceForLocs.pl -locFile my-loctrac > output.fa 
+\end{verbatim}
 
 \item
 In the folder \begin{verbatim} ~/Project_GC_Content/RData/ \end{verbatim}, 
@@ -83,5 +84,68 @@ The above fragIndexList files are used by the shell script \begin{verbatim} _gen
 to use the syntax mentioned in Step 4 to get the intensities of all the molecules aligned to a particular fragment index location. These fragment index locations are read in from the fragIndexList files created by R. This shell script creates a shell script for each chromosome, containing the commands for extracting intensities for one fragment per line. For example, these shell scripts are named \begin{verbatim} _extractIntensities_chr3.sh \end{verbatim}.
 
 \item
+{\bf{Instructions to create the MFlorum data}}\\
+\begin{itemize}
+\item
+Before alignment, create a mapset file, either with one conversion factor or with multiple conversion factors. The syntax for creating this mapset file is:
+\begin{verbatim}
+cd /aspen/nandi/MF_cap348/maps_inca34/
+cat group1-*-inca34-outputs/FragmentLengthsApprox3.maps | 
+makeMapsetFromPixel_Steve.pl 
+-factor 209 -run 734 -minSize 10 -minFrags 5 
+> MF_cap348_inca34_cf209_minSize10_minFrag5.maps
+\end{verbatim}
+This mapset file will serve as the input to alignment.
+\item
+Edit the soma parameter file, with appropriate inputfile name (the mapset file created in the above set), the reference filename (mesoplasm\_ref.map) and the output filename (the xml output, to be read by subsequent scripts), and appropriate parameters, and do an alignment. The command for running an alignment (with soma parameter filename soma.param\_cf209) is:
+\begin{verbatim}
+soma_align.LINUX soma.param_cf209
+\end{verbatim}
+\item
+To view the result of the alignment in genspect, which reads in the xml output of the previous step, run the following command:
+\begin{verbatim}
+genspectx MF_cap348_inca34_cf209_minSize10_minFrag5_Aligned.xml
+\end{verbatim}
+\item
+To see some basic statistics before and after alignment, use the command 
+\begin{verbatim}
+mass3 inputmapset.maps, or
+mass3 alignedmapset.maps
+\end{verbatim}
+To produce the alignedmapset.maps file, use the following shellscript:
+\begin{verbatim}
+GetAlignedMaps.sh -f AlignmentOutput.xml > AlignmentOutput.maps
+\end{verbatim}
+
+\item
+The MFlorum alignment data are in the folders
+\begin{verbatim}
+/aspen/nandi/MF_asp74   and   /aspen/nandi/MF_cap348
+\end{verbatim}
+\item
+All data extracted from these alignment data will be in 
+\begin{verbatim}
+/home/nandi/mflorum_nMaps/GC_Content
+\end{verbatim}
+Filenames and folder structures will be same as those of the human genome data. 
+\item
+To create the file {\it{pixelIntensities.eachFragment.asp74\_inca34}}, use the modified version of Steve's perl script: 
+\begin{verbatim}
+fluorIntensityFor_nMaps.byPixel_forMFlorum.pl > 
+                             pixelIntensities.eachFragment.asp74_inca34
+\end{verbatim}
+Use appropriate directory in line 31 of this perl script to extract data from asp or cap mount, inca 34 or 36.
+\item
+Below is an example to produce the final dataset for each fragment, to be read in by the R script:
+\begin{verbatim}
+intensityForAlignedFrags.pl -ch 1 -f 11 -a 
+/aspen/nandi/MF_cap348/maps_inca34/
+MF_cap348_inca34_cf209_minSize50_minFrag5_Aligned.alignmentChunks 
+-nM ~/mflorum_nMaps/GC_Content/pixelIntensities.eachFragment.cap348_inca34 
+> ~/Project_GC_Content/RData/mflorum/chr1_frag11_intensities
+\end{verbatim}
+
+\end{itemize}
+
 \end{enumerate}
 \end{document}

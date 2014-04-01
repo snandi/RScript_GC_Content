@@ -28,6 +28,13 @@ na.is.zero <- function(X)
 ########################################################################
 
 ########################################################################
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+########################################################################
+
+########################################################################
 ## This function converts the raw data to fragment level averages and ##
 ## sd of intensity. Each row of the output is a unique fragment. It   ##
 ## also includes the number of molecules aligned to those fragments.  ##
@@ -89,15 +96,21 @@ fn_subsetByCoverage <- function(CoverageNum=15, filename='FragmentData_5000.RDat
 ## -frame format. Each dataframe has a column of intensity values of  ##
 ## one molecule. That molecule name is in one of the other columns.   ##
 ########################################################################
-fn_returnMoleculeIntensity <- function(MoleculeID, FragmentData){
+fn_returnMoleculeIntensity <- function(MoleculeID, FragmentData, 
+                                       Truncate=TRUE, TruncateLength=10){
   NColumns <- ncol(FragmentData)
   Subset <- subset(FragmentData, moleculeID==MoleculeID)
   Intensity <- as.vector(Subset[11:NColumns])
   Intensity <- Intensity[!is.na(Intensity)]
   IntensityData <- as.data.frame(Intensity)
   IntensityData$MoleculeID <- MoleculeID
-  IntensityData$Intensity_Normalized <- IntensityData$Intensity/median(IntensityData$Intensity)
   IntensityData$PixelNum <- index(IntensityData)
+  KeepFrom <- 1 + TruncateLength
+  KeepTo <- max(IntensityData$PixelNum) - TruncateLength
+  if(Truncate){
+    IntensityData <- subset(IntensityData, PixelNum %in% KeepFrom:KeepTo)
+  }
+  IntensityData$Intensity_Normalized <- IntensityData$Intensity/median(IntensityData$Intensity)
   IntensityData <- within(data=IntensityData,{
     MoleculeID <- factor(MoleculeID)
   })
@@ -195,9 +208,9 @@ fn_numMolAlignedperLoc <- function(AlChunk){
 ## aligns them pixel by pixel, based on randomized pixel insertion/   ##
 ## deletion, a Monte-carlo type algorithm.                            ##
 ########################################################################
-fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
+fn_alignPixels <- function(Test, Reference, Simulation_N=5000, verbose=FALSE){
   if(length(Reference) < length(Test)){
-    print("Reference Shorter")
+    if(verbose==TRUE) print("Reference Shorter")
     Diff <- length(Test) - length(Reference)
     SimulationLength <- min(Simulation_N, floor(choose(n=length(Test), k=Diff)/10))
     RSquared <- 0
@@ -213,10 +226,10 @@ fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
       #print(c(RSquared, summary(Model)$r.squared))
     }
     Test.Aligned <- Test[index(Test) %w/o% c(BestSample)]
-    print(RSquared)
+    if(verbose==TRUE) print(RSquared)
     return(Test.Aligned)
   } else if(length(Test) < length(Reference)){
-    print("Reference Longer")
+    if(verbose==TRUE) print("Reference Longer")
     Diff <- length(Reference) - length(Test)
     SimulationLength <- min(Simulation_N, floor(choose(n=length(Test), k=Diff)/10))
     RSquared <- 0
@@ -236,10 +249,10 @@ fn_alignPixels <- function(Test, Reference, Simulation_N=5000){
         Test.Aligned <- Test1
       }
     }
-    print(RSquared)
+    if(verbose==TRUE) print(RSquared)
     return(Test.Aligned)
   } else{
-    print("Same Length")
+    if(verbose==TRUE) print("Same Length")
     Test.Aligned <- Test
     return(Test.Aligned)
   }
@@ -283,15 +296,27 @@ fn_subseq <- function(x, n, force.number.of.groups = TRUE, len = length(x),
 ## index number, grabs the DNA sequence data from a specified folder  ##
 ## location, and returns the raw sequence data, the percentages of A, ##
 ## C, G, T in 200 base pair windows                                   ##
+##                                                                    ##
+## For human genome, enter Chr & FragIndex and it will grab the file  ##
+## For mflorum, enter the filename directly. Leave Chr blank          ##
 ########################################################################
-fn_returnSeqComp <- function(Chr, FragIndex, Interval=200, DataPath.CpG){
-  Filename <- paste(DataPath.CpG, Chr, '_frag', FragIndex, '_seq.fa', sep='')
+fn_returnSeqComp <- function(Chr='', FragIndex='', numPixels, 
+                             ## numPixels is the number of pixels in the interval
+                             Interval=BasePairInterval,
+                             ## BasePairInterval is the number of bp per pixel
+                             DataPath=DataPath.CpG, 
+                             FragBP_Start, FragBP_End,
+                             Filename=paste(DataPath, Chr, '_frag', FragIndex, '_seq.fa', sep='')){
+  #Filename <- paste(DataPath.CpG, Chr, '_frag', FragIndex, '_seq.fa', sep='')
   SeqData <- read.fasta(file = Filename)[[1]]
+  SeqData <- SeqData[FragBP_Start:FragBP_End]
+  
   SeqTable <- count(seq=SeqData, wordsize=1)
   SeqGC <- GC(SeqData)
   
-  BasePosition <- seq(from=1, to=length(SeqData), by=Interval)
-  SplitSeq <- fn_subseq(x=SeqData, n=ceil(max(BasePosition)/Interval), force.number.of.groups=TRUE)
+  BasePosition <- round(seq(from=FragBP_Start, to=FragBP_End, by=BasePairInterval), 0)
+  #BasePosition <- seq(from=1, to=length(SeqData), by=Interval)
+  SplitSeq <- fn_subseq(x=SeqData, n=numPixels, force.number.of.groups=TRUE)
   SplitSeq_ACGT <- do.call(what=rbind, lapply(X=SplitSeq, FUN=count, wordsize=1))
   rownames(SplitSeq_ACGT) <- BasePosition[1:nrow(SplitSeq_ACGT)]
   colnames(SplitSeq_ACGT) <- c('A', 'C', 'G', 'T')
@@ -311,5 +336,52 @@ fn_getRefMolecule <- function(NumPixels){
   RefLength <- NumPixels[RowNum,'Pixels']
   RefMoleculeID <- as.vector(NumPixels[RowNum,'MoleculeID'])
   return(RefMoleculeID)
+}
+########################################################################
+
+########################################################################
+## This function returns the mode of a vector of integers. This was   ##
+## specifically written for written to estimate the  mode of pixel    ##
+## lengths of multiple NMaps aligned to the same interval on the ref- ##
+## -erence genome. However, this can be used in other programs as well##
+########################################################################
+fn_Mode <- function(Vector){
+  Table <- table(Vector)
+  Modes <- Table[Table==max(Table)]
+  if(length(Modes) > 1 & odd(length(Modes))){ ## If there are two modes
+    Mode <- median(as.numeric(names(Modes)))
+  } else if(length(Modes) > 1 & even(length(Modes))){
+    Mode <- as.numeric(names(Modes)[length(names(Modes))/2])
+  } else{
+    Mode <- as.numeric(names(Modes))
+  }
+  return(Mode)
+}
+########################################################################
+
+########################################################################
+## This function returns a matrix of p-values of pairwise difference  ##
+## after a Tukey test has been performed on the anova                 ##
+########################################################################
+fn_return_pValueTukeyMatrix <- function(TukeyObj){
+  TukeyObj.DF <- as.data.frame(TukeyObj$Fragment)
+  
+  TukeyObj.DF$Frag1 <- sapply(X=rownames(TukeyObj.DF), FUN=function(rowname){
+    unlist(strsplit(rowname, split='-'))[1]})
+  TukeyObj.DF$Frag2 <- sapply(X=rownames(TukeyObj.DF), FUN=function(rowname){
+    unlist(strsplit(rowname, split='-'))[2]})
+  TukeyObj.DF <- within(data=TukeyObj.DF, {
+    Frag1 <- as.factor(Frag1)
+    Frag2 <- as.factor(Frag2)
+  })
+  
+  TukeyObj.pValues <- reshape(TukeyObj.DF[,c('Frag1', 'Frag2', 'p adj')],
+                            timevar='Frag2',
+                            idvar='Frag1',
+                            direction='wide')
+  rownames(TukeyObj.pValues) <- TukeyObj.pValues$Frag1
+  TukeyObj.pValues$Frag1 <- NULL
+  colnames(TukeyObj.pValues) <- gsub(pattern='p adj.', replacement='', x=colnames(TukeyObj.pValues))
+  return(data.matrix(TukeyObj.pValues))
 }
 ########################################################################

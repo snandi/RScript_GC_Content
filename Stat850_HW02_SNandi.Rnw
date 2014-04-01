@@ -1,0 +1,469 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}                                                                                                                                                                                
+\usepackage{amsthm}                                                                                                                                                                                 
+\usepackage{amssymb}                                                                                                                                                                                
+\usepackage{bbold}                                                                                                                                                                                  
+\usepackage{dsfont}                                                                                                                                                                                 
+\usepackage{enumerate}
+\usepackage{fancyhdr}                                                                                                                                                                               
+\usepackage{float}                                                                                                                                                                                  
+\usepackage{fullpage}                                                                                                                                                                               
+\usepackage[vmargin=2cm, hmargin=2cm]{geometry}                                                                                                                                                     
+\usepackage{graphicx}                                                                                                                                                                               
+\usepackage{lscape}                                                                                                                                                                                 
+\usepackage{mathtools}                                                                                                                                                                              
+\usepackage{pdfpages}                                                                                                                                                                               
+\usepackage{verbatim}                                                                                                                                                                               
+\usepackage{wrapfig}                                                                                                                                                                                
+\usepackage{xargs}                                                                                                                                                                                  
+
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+
+\newcommand{\Exp}{\mathds{E}}
+\newcommand{\Prob}{\mathds{P}}
+\newcommand{\Z}{\mathds{Z}}
+\newcommand{\Ind}{\mathds{1}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\be}{\begin{equation}}                                                                                                                                                                  
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bes}{\begin{equation*}}                                                                                                                                                                
+\newcommand{\ees}{\end{equation*}}
+
+\newcommand{\union}{\bigcup}
+\newcommand{\intersect}{\bigcap}
+\newcommand{\Ybar}{\overline{Y}}
+\newcommand{\ybar}{\bar{y}}
+\newcommand{\Xbar}{\overline{X}}
+\newcommand{\xbar}{\bar{x}}
+\newcommand{\betahat}{\hat{\beta}}
+\newcommand{\Yhat}{\widehat{Y}}
+\newcommand{\yhat}{\hat{y}}
+\newcommand{\Xhat}{\widehat{X}}
+\newcommand{\xhat}{\hat{x}}
+\newcommand{\E}[1]{\operatorname{E}\left[ #1 \right]}
+%\newcommand{\Var}[1]{\operatorname{Var}\left( #1 \right)}                                                                                                                                          
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}[2]{\operatorname{Cov}\left( #1,#2 \right)}
+\newcommand{\N}[2][1=\mu, 2=\sigma^2]{\operatorname{N}\left( #1,#2 \right)}
+\newcommand{\bp}[1]{\left( #1 \right)}
+\newcommand{\bsb}[1]{\left[ #1 \right]}
+\newcommand{\bcb}[1]{\left\{ #1 \right\}}
+%\newcommand{\infint}{\int_{-\infty}^{\infty}}                                                                                                                                                      
+ 
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Status Update Meeting}
+\author{Subhrangshu Nandi\\
+  Department of Statistics\\
+  nandi@stat.wisc.edu}
+\date{March 5, 2014}
+\maketitle
+\noindent
+<<echo=FALSE>>=
+rm(list=ls(all.names=TRUE))
+rm(list=objects(all.names=TRUE))
+#dev.off()
+
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+FilePath <- '~/Courses/Stat850_Spring2014/HW02/'
+DataPath <- '~/Courses/Stat850_Spring2014/HW02/'
+Filename.Header <- paste('~/RScripts/HeaderFile_Stat850.R', sep='')
+source(Filename.Header)
+@
+
+\section*{Problem 1}
+Below is the Anova table for the hypothesis:\\
+$H_0\ :\ \mu_1=\mu_2=\mu_3=\mu_4\ \text{vs. } H_a: \mu_i \ne \mu_j $, for some $i,j\ =\ 1, 2, 3, 4,\ i \ne j$\\
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+Cause of variation & DF & Sum Squares & Mean Squares & F value & p-value \\ 
+  \hline
+Treatment   & 3 & 36.18 & 12.06 & 0.99 & 0.4440 \\ 
+  Residuals   & 8 & 97.20 & 12.15 &  &  \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+Based on the p-value, the conclusion is that there is not enough evidence to reject the null hypothesis. Hence, all the above four treatments {\it{probably}} yield the same moisture content.
+
+\section*{Problem 2}
+{\underline{Scheme 1}}
+\begin{align}
+y_1\ &=\ C - A \\ \nonumber
+y_2\ &=\ D - A - B \\ \nonumber
+y_3\ &=\ B + D - A - C \\ \nonumber
+y_4\ &=\ - C \\ \nonumber
+y_5\ &=\ C - B \\ \nonumber
+y_6\ &=\ C - A
+\end{align}
+where the design matrix can be written as:
+\[M_1 = 
+\begin{pmatrix}
+-1 & 0 & 1 & 0 \\
+-1 & -1 & 0 & 1 \\
+-1 & 1 & -1 & 1 \\
+0 & 0 & -1 & 0 \\
+0 & -1 & 1 & 0 \\
+-1 & 0 & 1 & 0 
+\end{pmatrix}
+\]
+{\underline{Scheme 2}}
+\begin{align}
+y_1\ &=\ C - A \\ \nonumber
+y_2\ &=\ D - A - B \\ \nonumber
+y_3\ &=\ C + D - A - B \\ \nonumber
+y_4\ &=\ - C \\ \nonumber
+y_5\ &=\ C + D - B \\ \nonumber
+y_6\ &=\ C - A
+\end{align}
+where the design matrix can be written as:
+\[M_2 = 
+\begin{pmatrix}
+-1 & 0 & 1 & 0 \\
+-1 & -1 & 0 & 1 \\
+-1 & -1 & 1 & 1 \\
+0 & 0 & -1 & 0 \\
+0 & -1 & 1 & 1 \\
+-1 & 0 & 1 & 0 
+\end{pmatrix}
+\]
+From algebra perspective, the design matrix of scheme 1 is of rank 4, while that of scheme 2 is of rank 3. Hence, in scheme 2, the system of equations is not estimable. Upon further investigation, B and D will not be uniquely estimated by scheme 2. Hence, from algebraic perspective, scheme 1 is better.\\
+Also, notice that in scheme 2, B and D are always measured together. This will only result in the estimation of B - D. Other than that, there are very few differences between the two schemes.
+
+\section*{Problem 3}
+The table below illustrates that $r$, the group size, should be at least $15$, for the power of the test to be at least $90\%$, with $\alpha\ =\ 0.05$
+<<echo=FALSE, results=tex>>=
+rm(list=ls(all.names=TRUE))
+rm(list=objects(all.names=TRUE))
+#dev.off()
+
+########################################################################
+## This is R Script for Stat 850, HW02, Prob 3                        ##
+########################################################################
+
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+FilePath <- '~/Courses/Stat850_Spring2014/HW02/'
+DataPath <- '~/Courses/Stat850_Spring2014/HW02/'
+########################################################################
+
+T <- 5 # number of treatments
+nu1 <- T - 1 # numerator df
+alpha <- 0.05
+sigma2 <- 3^2 
+sumt2 <- 2*(2.25^2)
+
+Power <- NULL
+nu2 <- NULL
+lambda <- NULL
+
+i <- 1
+for(r in 10:20){
+  nu2[i] <- T*(r-1) # denominator df
+  F_Crit <- qf(p=(1-alpha), df1=nu1, df2=nu2[i]) # F critical value
+  lambda[i] <- r * sumt2/sigma2 # non-centrality parameter
+  Power[i] <- 1 - pf(q=F_Crit, df1=nu1, df2=nu2[i], ncp=lambda[i])
+  i <- i + 1
+}
+
+r <- 10:20
+xtable(cbind(r, nu1, nu2, lambda, Power))
+@
+\section*{Problem 4}
+\noindent
+(a) Below is a histogram of the response variable, hemoglobin and a boxplot of the hemoglobin, separated by the four troughs, with varying weights of sulfamerazine. As can be seen in the boxplots, there might be differences in the mean responses, by treatment.
+
+<<echo=FALSE, print=FALSE, results=hide>>=
+########################################################################
+## This is R Script for Stat 850, HW02, Prob 4                        ##
+########################################################################
+
+########################################################################
+## Input Data                                                         ##
+########################################################################
+Trough_00gm <- c(6.7, 7.8, 5.5, 8.4, 7.0, 7.8, 8.6, 7.4, 5.8, 7.0)
+Trough_05gm <- c(9.9, 8.4, 10.4, 9.3, 10.7, 11.9, 7.1, 6.4, 8.6, 10.6)
+Trough_10gm <- c(10.4, 8.1, 10.6, 8.7, 10.7, 9.1, 8.8, 8.1, 7.8, 8.0)
+Trough_15gm <- c(9.3, 9.3, 7.2, 7.8, 9.3, 10.2, 8.7, 8.6, 9.3, 7.2)
+
+Data <- stack(as.data.frame(cbind(Trough_00gm, Trough_05gm, Trough_10gm, Trough_15gm)))
+names(Data) <- c('Hemoglobin', 'Trough')
+Data <- within(data=Data,{
+  Trough <- factor(Trough)
+})
+levels(Data$Trough) <- c('0 gm', '5 gm', '10 gm', '15 gm')
+########################################################################
+## Data Exploration                                                   ##
+########################################################################
+Plot1 <- qplot(x=Hemoglobin, data=Data, binwidth=0.5)
+jpeg(filename=paste(DataPath, 'Prob4_Plot1.jpg', sep=''))
+print(Plot1)
+dev.off()
+
+panel.mean <- function(x, y, ...) {
+  tmp <- tapply(y, factor(x), FUN = mean)
+  panel.points(tmp, pch=15, col='white', ...)
+}
+
+Plot1 <- bwplot(Hemoglobin ~ Trough, data=Data, 
+                xlab='sulfamerazine (gm per 100lbs)', ylab='Hemoglobin (gm per 100 ml)',
+                main='Boxplot of Hemoglobin for different levels of sulfamerazine',
+                par.settings = list(box.rectangle = list(fill= 'gray25'),
+                                    box.umbrella = list(col = 'black'),
+                                    col='white',
+                                    box.dot = list(col = 'black')),
+                panel=function(...){
+                  panel.bwplot(pch='|', col='white', ...)
+                  panel.mean(...)
+                }     
+)
+jpeg(filename=paste(DataPath, 'Prob4_Plot2.jpg', sep=''))
+print(Plot1)
+dev.off()
+@
+\begin{figure}[H]
+\centering
+\includegraphics[width=3.5in, height=3.5in]{Prob4_Plot1.jpg}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=3.5in, height=3.5in]{Prob4_Plot2.jpg}
+\end{figure}
+
+\noindent
+(b) The treatment variable is numeric, with 0, 5, 10 and 15 grams of sulfamerazine per 100 pounds of fish. Hence, a linear model with a second order covariate could be a reasonable first attempt at modeling the response (hemoglobin) with respect to treatments. However, since there are only four values of the treatment, it might make more sense to treat the four levels of the treatments as levels of a categorical variable and fit a one-way ANOVA with fixed effects:\\
+\[Y_{jk} = \mu_j + \epsilon_{jk},\ \epsilon_{jk} \text{ are i.i.d. } N(0,\sigma^2),\ j=1,2,3,4,\ k= 1\dots 10  \]
+
+\noindent
+(c) The least squares estimate of the mean response for each treatment are:
+\begin{table}[H] 
+\caption{Mean response per treatment}       % title of Table 
+\centering                                                        % used for centering table 
+\begin{tabular}{c c c c}               % centered columns (17 columns) 
+%Case & Method\#1 & Method\#2 & Method\#3 \\ [0.5ex] % inserts table 
+%heading 
+\hline
+$\mu_1$ & $\mu_2$ & $\mu_3$ & $\mu_4$ \\[1ex]
+\hline \hline \\                          %inserts double horizontal lines 
+7.2 & 9.33 & 9.03 & 8.69 \\[1ex]             % [1ex] adds vertical space 
+\hline                                  %inserts single line 
+\end{tabular} 
+\label{table:Table4.1}                    % is used to refer this table in the text 
+\end{table} 
+The mean values are illustrated as white dots in the boxplot above. The only evidence from these estimates is that the responses from the control group (with 0 gm of sulfamerazine) have a lower mean compared to the treatment groups.\\
+\noindent
+(d) Testing the hypothesis $H_0\ :\ \mu_1=\mu_2=\mu_3=\mu_4\ \text{vs. } H_a: \mu_i \ne \mu_j $, for some $i,j\ =\ 1, 2, 3, 4,\ i \ne j$, yields the following F-Test results:
+
+<<echo=FALSE, results=tex>>=
+xtable(summary(aov(Hemoglobin ~ Trough, data=Data)))
+@
+The p-value ($0.0027$) is low enough to reject the null hypothesis. Hence, sulfamerazine probably does have some effect on the content of trout blood.\\
+\noindent
+(e) Notice that $\hat{\sigma^2} = 1.57$ and with $\nu = n\ -\ t\ =\ 36$, and $\alpha\ = 0.05$, the upper confidence limit of $\sigma^2$ is $\frac{\nu\hat{\sigma^2}}{\chi^2_{\nu, \alpha/2}}\ =\ 2.647$
+
+\section*{Problem 5}
+(a) Below are some preliminary exploratory plots of the data:
+<<echo=FALSE, results=hide>>=
+rm(list=ls(all.names=TRUE))
+rm(list=objects(all.names=TRUE))
+#dev.off()
+
+########################################################################
+## This is R Script for Stat 850, HW02, Prob 5                        ##
+########################################################################
+
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+FilePath <- '~/Courses/Stat850_Spring2014/HW02/'
+DataPath <- '~/Courses/Stat850_Spring2014/HW02/'
+########################################################################
+
+########################################################################
+## Input Data                                                         ##
+########################################################################
+Filename <- paste(FilePath, 'hwk2_data.txt', sep='')
+Data <- read.table(file=Filename, header=TRUE)
+Data$trt <- as.factor(Data$trt)
+
+########################################################################
+## Exploring Data                                                     ##
+########################################################################
+Data2 <- aggregate(x=Data$advplt, by=list(trt=Data$trt, box=Data$box), FUN=mean)
+names(Data2)[names(Data2)=='x'] <- 'advplt_avg'
+
+########################################################################
+## Part a                                                     ##
+########################################################################
+## Figure 1.3
+Hist1 <- histogram(~ advplt_avg, data=Data2, breaks=20, col='gray25')
+Hist2 <- histogram(~ advplt_avg | trt, data=Data2, col='gray25', breaks=10)
+Box1 <- bwplot(advplt_avg ~ trt, data=Data2,
+               xlab='Treatment', ylab='Avg adventitous shoots',
+               par.settings = list(box.rectangle = list(fill= 'gray50'),
+                                   box.umbrella = list(col = 'gray50'),
+                                   box.dot = list(col = 'black'))
+)
+jpeg(filename=paste(DataPath, 'Prob5_Plot1.jpg', sep=''))
+grid.arrange(Hist1, Box1, ncol=2)
+dev.off()
+jpeg(filename=paste(DataPath, 'Prob5_Plot2.jpg', sep=''))
+print(Hist2)
+dev.off()
+Box2 <- bwplot(sqrt(advplt_avg) ~ trt, data=Data2,
+               xlab='Treatment', ylab='Avg adventitous shoots',
+               par.settings = list(box.rectangle = list(fill= 'gray50'),
+                                   box.umbrella = list(col = 'gray50'),
+                                   box.dot = list(col = 'black'))
+)
+jpeg(filename=paste(DataPath, 'Prob5_Plot3.jpg', sep=''))
+print(Box2)
+dev.off()
+@
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in, height=3in]{Prob5_Plot1.jpg}
+\caption{Histogram and boxplots of response}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in, height=4in]{Prob5_Plot2.jpg}
+\caption{Histogram of response, by treatment}
+\end{figure}
+As can be seen in the histogram above, the response variable has a lot of zeroes, even after averaging over multiple cots. In fact, treatments 20 and 0 have a majority of their responses as 0. In addition, from the boxplots it is evident that the variances of the responses for the different treatments are unequal. Hence, the homoskedasticity assumption is violated. Below is a boxplot of the responses, after square-root transformation. Even after transformation, treatments 0 and 8 seem to exhibit higher variances.
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in, height=4in]{Prob5_Plot3.jpg}
+\caption{Boxplot after square root transfotmation}
+\end{figure}
+
+(b) The mean and standard deviation for each treatment group are:
+\begin{table}[H] 
+\caption{Summary per treatment}       % title of Table 
+\centering                                                        % used for centering table 
+\begin{tabular}{c c c }               % centered columns (17 columns) 
+%Case & Method\#1 & Method\#2 & Method\#3 \\ [0.5ex] % inserts table 
+%heading 
+Treatment & Mean & Std. Dev \\
+\hline\hline                            %inserts double horizontal lines 
+0 & 0.0884 & 0.2500 \\
+1 & 2.0033 & 1.5068 \\
+2 & 0.7690 & 0.5694 \\
+3 & 0.9233 & 1.1135 \\
+4 & 0.7490 & 0.9645 \\
+5 & 0.8272 & 1.1036 \\
+6 & 1.0177 & 0.8631 \\
+7 & 0.4549 & 0.5134 \\
+8 & 1.5011 & 1.4565 \\
+9 & 0.5565 & 0.8038 \\
+10 & 0.9172 & 1.0536 \\
+20 & 0.4472 & 0.6969 \\[1ex]             % [1ex] adds vertical space 
+\hline                                  %inserts single line 
+\end{tabular} 
+\label{table:Table5.1}                    % is used to refer this table in the text 
+\end{table} 
+
+(c) An overall F-test for equality of means yields:
+% latex table generated in R 3.0.2 by xtable 1.7-1 package
+% Wed Feb 19 20:10:21 2014
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\hline
+& Df & Sum Sq & Mean Sq & F value & p-value \\ 
+\hline
+Treatment & 11 & 21.93 & 1.99 & 2.13 & 0.0269 \\ 
+Residuals & 83 & 77.80 & 0.94 &  &  \\ 
+\hline
+\end{tabular}
+\end{table}
+Since the p-value is less than $0.05$, the null hypothesis of equal means is rejected at $95\%$ confidence level. To detect the source of the difference, below is the result of pairwise t test.
+
+<<echo=FALSE, results=tex, include=TRUE>>=
+TTest <- pairwise.t.test(x=sqrt(Data2$advplt_avg), g=Data2$trt, p.adjust.method='none',
+                         pool.sd=TRUE, alternative='two.sided')
+xtable(TTest$p.value, caption=TTest$method)
+@
+Notice that Treatment 1 (BA 0 and TDZ 0:2) is significantly ($95\%$ confidence) different from all the other Treatments, except Treatment 8. There is also significant difference between Treatments 0 and 8, probably because of BA levels 0 and 4.4.
+
+(d) After removing the zeroes, below is a boxplot of the remaining responses, after square root transformation:
+<<echo=FALSE, results=hide>>=
+Data1 <- subset(Data, advplt > 0)
+Data3 <- aggregate(x=Data1$advplt, by=list(trt=Data1$trt, box=Data1$box), FUN=mean)
+names(Data3)[names(Data3)=='x'] <- 'advplt_avg'
+head(Data3)
+str(Data3)
+
+Box3 <- bwplot(sqrt(advplt_avg) ~ trt, data=Data3,
+               xlab='Treatment', ylab='Avg adventitous shoots',
+               par.settings = list(box.rectangle = list(fill= 'gray50'),
+                                   box.umbrella = list(col = 'gray50'),
+                                   box.dot = list(col = 'black'))
+)
+jpeg(filename=paste(DataPath, 'Prob5_Plot4.jpg', sep=''))
+print(Box3)
+dev.off()
+@
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in, height=4in]{Prob5_Plot4.jpg}
+\caption{Boxplot after removing zeroes}
+\end{figure}
+
+Below are the means and standard deviations:
+\begin{table}[H] 
+\caption{Summary per treatment after removing zeroes}       % title of Table 
+\centering                                                        % used for centering table 
+\begin{tabular}{c c c }               % centered columns (17 columns) 
+\hline\hline                            %inserts double horizontal lines 
+%Case & Method\#1 & Method\#2 & Method\#3 \\ [0.5ex] % inserts table 
+%heading 
+Treatment & Mean & Std. Dev \\
+0 & 1.0000 & NA \\
+1 & 3.0673 & 0.9001 \\
+2 & 1.4500 & 0.5262 \\
+3 & 2.0893 & 1.5145 \\
+4 & 1.6980 & 0.6993 \\
+5 & 2.0206 & 0.8504 \\
+6 & 2.0200 & 0.3870 \\
+7 & 1.2866 & 0.3554 \\
+8 & 3.5079 & 1.1225 \\
+9 & 2.0987 & 0.6272 \\
+10 & 2.4004 & 0.9041 \\
+20 & 1.5486 & 0.9502 \\[1ex]             % [1ex] adds vertical space 
+\hline                                  %inserts single line 
+\end{tabular} 
+\label{table:Table5.2}                    % is used to refer this table in the text 
+\end{table} 
+
+Below is the resulf of the overall F-Test, testing for equality of means of all treatments:
+<<echo=FALSE, results=tex>>=
+#Data3 <- subset(Data3, trt!='0')
+names(Data3)[1] <- 'Treatment'
+xtable(summary(aov(sqrt(advplt_avg) ~ Treatment, data=Data3)))
+@
+Even after removing the zeroes, the p-value is low enough to reject the null hypothesis of equal means. Below is the result of the pairwise t-test:
+<<echo=FALSE, results=tex, include=TRUE>>=
+Data3 <- subset(Data3, Treatment != '0')
+TTest2 <- pairwise.t.test(x=sqrt(Data3$advplt_avg), g=Data3$Treatment, p.adjust.method='none',
+                         pool.sd=TRUE, alternative='two.sided')
+xtable(TTest2$p.value, caption=TTest2$method)
+@
+Notice that Treatment 0 is removed because it has only 1 response observation. \\
+
+(e) With the zeroes in the data, Treatment 1 (BA 0 and TDZ 0:2) is significantly ($95\%$ confidence) different from all the other Treatments, except Treatment 8. There is also significant difference between Treatments 0 and 8, probably because of BA levels 0 and 4.4. \\
+Without the zeroes, as evident from the boxplot, Treatment 1 and Treatment 8 are significantly different from the other treatments. One of the conclusions could be that lower levels of TDZ yield higher number of adventitious shoots. 
+
+\end{document}
+

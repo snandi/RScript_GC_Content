@@ -1,0 +1,193 @@
+\documentclass[14pt]{article}
+\usepackage{amsmath}                                                                                                                                                                                
+\usepackage{amsthm}                                                                                                                                                                                 
+\usepackage{amssymb}                                                                                                                                                                                
+\usepackage{bbold}                                                                                                                                                                                  
+\usepackage{dsfont}                                                                                                                                                                                 
+\usepackage{enumerate}
+\usepackage{fancyhdr}                                                                                                                                                                               
+\usepackage{float}                                                                                                                                                                                  
+\usepackage{fullpage}                                                                                                                                                                               
+\usepackage[vmargin=2cm, hmargin=2cm]{geometry}                                                                                                                                                     
+\usepackage{graphicx}                                                                                                                                                                               
+\usepackage{lscape}                                                                                                                                                                                 
+\usepackage{mathtools}                                                                                                                                                                              
+\usepackage{pdfpages}                                                                                                                                                                               
+\usepackage{verbatim}                                                                                                                                                                               
+\usepackage{wrapfig}                                                                                                                                                                                
+\usepackage{xargs}                                                                                                                                                                                  
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+\newcommand{\Exp}{\mathds{E}}
+\newcommand{\Prob}{\mathds{P}}
+\newcommand{\Z}{\mathds{Z}}
+\newcommand{\Ind}{\mathds{1}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\be}{\begin{equation}}                                                                                                                                                                  
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bes}{\begin{equation*}}                                                                                                                                                                
+\newcommand{\ees}{\end{equation*}}
+
+\newcommand{\union}{\bigcup}
+\newcommand{\intersect}{\bigcap}
+\newcommand{\Ybar}{\overline{Y}}
+\newcommand{\ybar}{\bar{y}}
+\newcommand{\Xbar}{\overline{X}}
+\newcommand{\xbar}{\bar{x}}
+\newcommand{\betahat}{\hat{\beta}}
+\newcommand{\Yhat}{\widehat{Y}}
+\newcommand{\yhat}{\hat{y}}
+\newcommand{\Xhat}{\widehat{X}}
+\newcommand{\xhat}{\hat{x}}
+\newcommand{\E}[1]{\operatorname{E}\left[ #1 \right]}
+%\newcommand{\Var}[1]{\operatorname{Var}\left( #1 \right)}                                                                                                                                          
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}[2]{\operatorname{Cov}\left( #1,#2 \right)}
+\newcommand{\N}[2][1=\mu, 2=\sigma^2]{\operatorname{N}\left( #1,#2 \right)}
+\newcommand{\bp}[1]{\left( #1 \right)}
+\newcommand{\bsb}[1]{\left[ #1 \right]}
+\newcommand{\bcb}[1]{\left\{ #1 \right\}}
+%\newcommand{\infint}{\int_{-\infty}^{\infty}}                                                                                                                                                      
+ 
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+\title{Status Update Meeting}
+\author{Subhrangshu Nandi\\
+  Department of Statistics\\
+  nandi@stat.wisc.edu}
+\date{March 26, 2014}
+\maketitle
+
+\section*{To Do List (From Mar 14)}
+\begin{itemize}
+\item
+Analyze cleaner mflorum data from new experiment
+\item
+Analyze tandem repeats data from mm-52
+\item
+Extend 2-interval comparison analyis to multilple intervals
+\item
+Build a linear model with sequence composition features
+\end{itemize}
+
+\section*{Extend analyis to multilple intervals}
+\subsection*{Step 1}
+The following intervals, with groups of nMaps of {\bf{same}} stretch, were chosen:
+\begin{table}[h]
+\centering
+\begin{tabular}{crr}
+\hline \\
+& Interval Number & Length in Pixels (after truncation) \\
+\hline \hline \\
+1 & 1 & 68 \\
+2 & 2 & 263 \\
+3 & 3 & 47 \\ 
+4 & 6 & 39 \\ 
+5 & 9 & 102 \\
+6 & 11 & 80 \\ 
+7 & 12 & 55 \\
+8 & 15 & 33 \\ 
+9 & 18 & 106 \\
+10 & 19 & 163 \\
+11 & 21 & 128 \\
+12 & 22 & 71 \\
+13 & 24 & 134 \\
+14 & 25 & 178 \\
+15 & 27 & 58 \\
+16 & 28 & 55 \\
+17 & 30 & 155 \\
+18 & 31 & 68 \\
+19 & 32 & 133 \\
+20 & 33 & 80 \\
+21 & 35 & 48 \\
+22 & 36 & 226 \\
+23 & 37 & 59 \\
+\hline \hline
+\end{tabular}
+\end{table}
+
+\subsection*{Step 2}
+Only the {\bf{first}} 39 pixels were considered (to keep a balanced design; can be extended to unbalanced design)
+
+\subsection*{Step 3}
+Anova table for analyzing differences {\it{between}} intervals and {\it{within}} intervals: \\
+% latex table generated in R 2.15.0 by xtable 1.7-1 package
+% Tue Mar 25 20:51:06 2014
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) \\ 
+  \hline
+Fragment & 22 & 0.32 & 0.01 & 12.67 & 0.0000 \\ 
+  PixelFactor & 38 & 0.03 & 0.00 & 0.60 & 0.9764 \\ 
+  Residuals & 40616 & 46.71 & 0.00 &  &  \\ 
+   \hline
+\end{tabular}
+\caption{Anova table of 23 intervals and first 39 pixels in each}
+\end{table}
+\\
+Conclusion: Notice the significant F-Statistic. {\it{Between}} interval variability significantly higher than {\it{within}} fragment. \\
+{\it{Note that this result is opposite to what was observed last week, when the difference between interval 11 and interval 33 were not significant.}}
+
+\subsection*{Step 4: Identify pairwise difference}
+Conducted Tukey's HSD test, to identify pairwise difference. Below is a heatmap of p-values, more red signifies bigger difference between the two fragments.
+\begin{figure}[H]
+\centering
+\includegraphics[width=4.5in, height=4.5in]{Plot1.pdf}
+%\includegraphics[width=4.5in, height=4.5in]{Plot1.jpg}
+%\includegraphics{Plot1.jpg}
+\caption{Pairwise difference between intervals}
+\end{figure}
+
+\subsection*{Step 5: Control for Group (channel) effect}
+% latex table generated in R 2.15.0 by xtable 1.7-1 package
+% Tue Mar 25 21:14:57 2014
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) \\ 
+  \hline
+Fragment & 22 & 0.32 & 0.01 & 13.15 & 0.0000 \\ 
+  PixelFactor & 38 & 0.03 & 0.00 & 0.62 & 0.9676 \\ 
+  GroupID & 244 & 1.98 & 0.01 & 7.31 & 0.0000 \\ 
+  Residuals & 40372 & 44.74 & 0.00 &  &  \\ 
+   \hline
+\end{tabular}
+\caption{Anova table with Group as a factor}
+\end{table}
+Notice the significance of the Group factor. To eliminate (to some extent) this effect, the normalized intensity was divided by the Group level variance. Then the log of these weighted, normalized intensities were regressed with Fragment and Pixel number. Below is the anova table:\\
+% latex table generated in R 2.15.0 by xtable 1.7-1 package
+% Tue Mar 25 21:18:46 2014
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+  \hline
+ & Df & Sum Sq & Mean Sq & F value & Pr($>$F) \\ 
+  \hline
+Fragment & 22 & 33.40 & 1.52 & 74.05 & 0.0000 \\ 
+  PixelFactor & 38 & 0.03 & 0.00 & 0.03 & 1.0000 \\ 
+  Residuals & 40616 & 832.75 & 0.02 &  &  \\ 
+   \hline
+\end{tabular}
+\caption{Anova table of weighted, normalized intensity}
+\end{table}
+
+Notice that {\it{between}} interval variability remains significantly higher than {\it{within}} fragment variability.
+
+\subsection*{Step 6: Identify pairwise difference after weighting}
+Below is a heatmap of p-values, more red signifies bigger difference between the two fragments.
+\begin{figure}[H]
+\centering
+\includegraphics[width=4.5in, height=4.5in]{Plot2.pdf}
+%\includegraphics[width=4.5in, height=4.5in]{Plot2.jpg}
+%\includegraphics{Plot1.jpg}
+\caption{Pairwise difference between intervals, after weighting by Groups}
+
+\end{figure}
+
+\end{document}
+

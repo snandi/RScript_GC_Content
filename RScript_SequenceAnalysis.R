@@ -22,7 +22,6 @@ source(paste(RScriptPath, 'fn_Library_GC_Content.R', sep=''))
 Filename <- paste(DataPath.Nandi, 'mesoplasma_florum_1.fasta', sep='')
 MF_Seq <- read.fasta(file = Filename)[[1]]
 
-
 length(MF_Seq)
 count(seq=MF_Seq, wordsize=1)
 
