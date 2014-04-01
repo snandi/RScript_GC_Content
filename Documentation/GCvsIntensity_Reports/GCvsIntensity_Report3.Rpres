@@ -1,0 +1,112 @@
+Intensity & GC Content Report3
+========================================================
+author: Subhrangshu Nandi
+date: 2013-09-17
+
+Background
+========================================================
+
+- Response variable: Fluoroscence Intensity
+- Covariates: GC Content, Length of fragment, Stretch factor
+- Adjacent fragments share the same error
+- All 7,134 groups included in this model
+- Outliers are eliminated (& documented for further consideration)
+
+Model
+========================================================
+
+- 15 groups (or channels) are randomly selected from clean data
+- Average 50 molecules per group
+- Molecule level random effect added (to control for adjacent fragment similarity)
+- Three different models:
+  1. OLS (no weights)
+  2. Weights based on coverage of fragment location (higher the coverage, higher the weight)
+  3. Weights based on variance (higher the variance, lower the weight)
+
+R-Squares of three models
+========================================================
+
+```{r, echo=FALSE, fig=TRUE, fig.height=7,fig.width=12,fig.align='center'}
+########################################################################
+## Initialize Header file and function library                        ##
+########################################################################
+FilePath <- '~/RA_Genomics/Project_GC_Content/RScripts_GC_Content/'
+DataPath <- '~/RA_Genomics/Project_GC_Content/'
+DataPath.Steve <- DataPath
+Filename.Header <- paste('~/RScripts/HeaderFile_Nandi.R', sep='')
+source(Filename.Header)
+source(paste(FilePath, 'fn_Library_GC_Content.R', sep=''))
+########################################################################
+
+########################################################################
+## Data Input                                                         ##
+########################################################################
+Filename <- paste(DataPath, 'SamplingOutput.RData', sep='')
+load(Filename)
+
+MC_Output <- as.data.frame(MC_Output)
+
+lattice::densityplot(~ ModelA_RSquared + ModelB_RSquared + ModelC_RSquared, 
+                     data=MC_Output, type='density', auto.key=TRUE, lty=c(1:3),
+                     xlab='Model RSquares', lines=T, lwd=2)
+```
+R-Squares of three models
+========================================================
+
+- Model A (No weights)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelA_RSquared')])[c(1,3, 4, 6)]
+```
+- Model B (Weights by coverage of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelB_RSquared')])[c(1,3, 4, 6)]
+```
+- Model C (Weights by variance of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelC_RSquared')])[c(1,3, 4, 6)]
+```
+
+Intercept of three models
+========================================================
+- Model A (No weights)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelA_Intercept_Beta')])[c(1,3, 4, 6)]
+```
+- Model B (Weights by coverage of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelB_Intercept_Beta')])[c(1,3, 4, 6)]
+```
+- Model C (Weights by variance of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelC_Intercept_Beta')])[c(1,3, 4, 6)]
+```
+
+Beta of GC Content of three models
+========================================================
+```{r, echo=FALSE, fig=TRUE, fig.height=7,fig.width=12,fig.align='center'}
+lattice::densityplot(~ ModelA_GC_Content_Beta + ModelB_GC_Content_Beta + ModelC_GC_Content_Beta, 
+                     data=MC_Output, type='density', auto.key=TRUE, lty=c(1:3),
+                     xlab='Model GC_Content Beta', lines=T, lwd=2)
+```
+
+Beta of GC Content of three models
+========================================================
+- Model A (No weights)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelA_GC_Content_Beta')])[c(1,3, 4, 6)]
+```
+- Model B (Weights by coverage of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelB_GC_Content_Beta')])[c(1,3, 4, 6)]
+```
+- Model C (Weights by variance of fragment location)
+```{r, echo=FALSE}
+summary(MC_Output[,c('ModelC_GC_Content_Beta')])[c(1,3, 4, 6)]
+```
+
+Final Equation
+========================================================
+
+$log(Intensity) = 10.7 + 0.20 GC\_Content + Other Factors + \epsilon$
+
+$R^2 = 73\%$

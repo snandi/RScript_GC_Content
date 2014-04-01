@@ -1,0 +1,48 @@
+\documentclass[11pt]{article}
+%\usepackage{fancyhdr}
+\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{dsfont}
+\usepackage{bbold}
+\usepackage{graphicx, float}
+\usepackage{verbatim}
+\usepackage{amssymb, amsmath}
+%\usepackage[hmargin=3cm,vmargin=3cm]{geometry}
+\usepackage{wrapfig}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg, .jpeg}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Variable definitions\\ Project: Relationship between Intensity and GC Content}
+\author{Subhrangshu Nandi\\
+  Department of Statistics\\
+  Laboratory of Molecular and Computational Genomics\\
+  nandi@stat.wisc.edu}
+\date{July 13, 2013}
+\maketitle
+
+\subsection*{moleculeID}
+{\emph{moleculeID}} uniquely identifies a molecule in the database. It has three parts, example: 23705\_734\_2030001. The first part indicates $GroupID$, the second part indicates $RunID$. So, if it is from run $0$, it will have $734$ in the second part, indicating version 3.4 of INCA software. The third part is the stretch factor of the molecule number. So $2030001$ indicates a stretch factor 203 of molecule 1 of group 23705.
+
+\subsection*{alignedChr}
+Aligned Chromosome number. For human it will vary between 1 and 23.
+
+\subsection*{alignedFragIndex}
+
+\subsection*{fractionGC}
+
+\subsection*{intensityPerPixel}
+
+\subsection*{fragConversionFactor}
+
+\subsection*{lengthRatio}
+
+\subsection*{moleculeConversionFactor}
+
+\subsection*{numFrags}
+
+\subsection*{numPixels}
+
+
+
+\end{document}
